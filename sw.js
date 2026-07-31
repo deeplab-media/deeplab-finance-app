@@ -1,6 +1,6 @@
 /* Deeplab Finance PWA service worker — network-first, cache fallback.
    KHÔNG đụng vào api.github.com (đồng bộ dữ liệu luôn đi mạng thật). */
-const CACHE = 'deeplab-finance-v1';
+const CACHE = 'deeplab-finance-v2';
 const CORE = ['./', './index.html', './app.webmanifest', './finance-icon.png', './finance-icon-180.png'];
 
 self.addEventListener('install', e => {
@@ -21,8 +21,10 @@ self.addEventListener('fetch', e => {
   const inScope = u.origin === self.location.origin;
   const isExt = /fonts\.googleapis\.com|fonts\.gstatic\.com|cdnjs\.cloudflare\.com/.test(u.host);
   if (!inScope && !isExt) return; // api.github.com và mọi thứ khác: bỏ qua
+  // Trang chính luôn hỏi server bản mới nhất, không lấy từ HTTP cache — để cập nhật app là nhận ngay
+  const req = e.request.mode === 'navigate' ? new Request(e.request.url, { cache: 'no-cache' }) : e.request;
   e.respondWith(
-    fetch(e.request)
+    fetch(req)
       .then(r => {
         const clone = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
