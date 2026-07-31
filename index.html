@@ -290,7 +290,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.6</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.7</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -1395,9 +1395,21 @@ function fmtLive(el){
   try{el.setSelectionRange(pos,pos)}catch(e){}
   return raw===''?'':parseInt(raw,10);
 }
+/* Bộ gõ tiếng Việt (Unikey/EVKey): không format ô tiền khi đang trong phiên gõ dở,
+   chờ compositionend rồi mới xử lý — tránh ký tự bị chèn lặp đôi */
+let imeOn=false;
+document.addEventListener('compositionstart',()=>{imeOn=true});
+document.addEventListener('compositionend',e=>{
+  imeOn=false;
+  const el=e.target;
+  if(el&&el.classList&&el.classList.contains('money')){
+    setTimeout(()=>el.dispatchEvent(new Event('input',{bubbles:true})),0);
+  }
+});
 document.addEventListener('input',e=>{
   const el=e.target;
   const isMoney=el.classList.contains('money');
+  if(isMoney&&(e.isComposing||imeOn))return;
   let val=isMoney?fmtLive(el):(el.type==='checkbox'?el.checked:el.value);
   const p=cur();
 
