@@ -290,7 +290,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.7</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.8</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -378,6 +378,7 @@ function save(){
   clearTimeout(saveT);
   saveT=setTimeout(async()=>{
     S.updatedAt=Date.now();
+    S.cleared=!(S.projects&&S.projects.length); // đánh dấu "trống chủ đích" để máy khác chấp nhận xoá
     try{ await writeRaw(JSON.stringify(S)) }
     catch(e){ if(!warned){warned=true;toast('Trình duyệt này không cho lưu. Hãy bấm Sao lưu JSON trước khi đóng.')} }
     ghSchedule();
@@ -447,8 +448,8 @@ async function ghSync(pullOnly){
     // "established" = máy này đã từng đồng bộ thành công — máy lạ/trống không bao giờ được đè kho
     const established=(()=>{try{return localStorage.getItem('dlf-synced')==='1'}catch(e){return false}})();
     if(remote&&(remote.updatedAt||0)>(S.updatedAt||0)){
-      if(remoteN===0&&localN>0){
-        // kho bị trống (sự cố) nhưng máy này còn dữ liệu → đẩy dữ liệu lên lại, không cho xoá
+      if(remoteN===0&&localN>0&&!remote.cleared){
+        // kho bị trống KHÔNG chủ đích (sự cố) nhưng máy này còn dữ liệu → đẩy lên lại, không cho xoá
         S.updatedAt=Date.now();
         await ghPushAll();
         toast('Kho đang trống — đã đẩy lại dữ liệu từ máy này lên');
