@@ -346,7 +346,7 @@ function ghSetState(st){
   if(tab==='settings'){const st2=document.getElementById('ghstatus');if(st2)st2.textContent=({off:'Chưa kết nối',idle:'Đã kết nối, chưa đồng bộ lần nào',pending:'Đang đồng bộ…',ok:'Đồng bộ lần cuối: '+(ghLast?new Date(ghLast).toLocaleString('vi-VN'):''),error:'Lỗi — kiểm tra mạng hoặc token'})[st]||''}
 }
 async function ghReq(method,path,body){
-  const r=await fetch('https://api.github.com/repos/'+GHD.owner+'/'+GHD.repo+'/'+path,{
+  const r=await fetch('https://api.github.com/repos/'+GHD.owner+'/'+GHD.repo+(path?'/'+path:''),{
     method:method,
     headers:{'Authorization':'Bearer '+ghTok(),'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
     body:body?JSON.stringify(body):undefined
