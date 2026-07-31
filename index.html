@@ -297,6 +297,17 @@ details.sec .card{border:none;padding:0;background:none}
   .costrow>input[type=text]:first-child{grid-column:1/-1}
   .costrow .icon-btn{position:absolute;top:5px;right:4px;width:24px;height:24px}
   .costrow .tog{font-size:11px}
+  /* cảnh báo: chỉ hiện tiêu đề 1 dòng, chạm để xem giải thích */
+  .alert{padding:9px 11px;gap:8px;cursor:pointer;align-items:center}
+  .alert b{font-size:12.5px;font-weight:600;line-height:1.35}
+  .alert p{display:none}
+  .alert.open p{display:block;margin-top:5px}
+  .alert.open{align-items:flex-start}
+  /* bảng dự án: giấu cột phụ (khách, trạng thái, biên gộp, cần giữ lại) cho hết trượt ngang */
+  table.plist th:nth-child(2),table.plist td:nth-child(2),
+  table.plist th:nth-child(3),table.plist td:nth-child(3),
+  table.plist th:nth-child(5),table.plist td:nth-child(5),
+  table.plist th:nth-child(7),table.plist td:nth-child(7){display:none}
   /* tooltip thành bottom-sheet nổi trên thanh tab */
   .hint::after{position:fixed;left:12px;right:12px;bottom:calc(74px + env(safe-area-inset-bottom,0px));top:auto;transform:none;width:auto;font-size:12.5px;line-height:1.5}
   .toast{bottom:calc(74px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 36px);text-align:center;font-size:12.5px;padding:9px 14px}
@@ -325,7 +336,7 @@ details.sec .card{border:none;padding:0;background:none}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.2</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.3</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -786,7 +797,7 @@ function viewDash(){
   ${sec('d-list','Danh sách dự án',`
     <div class="row" style="margin-bottom:12px"><button class="btn btn-sm btn-primary" onclick="newProject()">+ Dự án mới</button>
     <button class="btn btn-sm" onclick="exportXLSX()">Xuất Excel</button></div>
-    ${tableProjects(S.projects)}`,true)}`;
+    ${tableProjects(S.projects)}`,!matchMedia('(max-width:900px)').matches,matchMedia('(max-width:900px)').matches?'xem đủ ở tab Dự án':'')}`;
 }
 
 
@@ -800,10 +811,10 @@ function cashflowInner(){
   const late=due.filter(x=>x.late).reduce((a,b)=>a+b.a,0);
   const in30=due.filter(x=>!x.late&&x.d&&x.d<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).reduce((a,b)=>a+b.a,0);
   const nodate=due.filter(x=>!x.d).reduce((a,b)=>a+b.a,0);
-  return `<div class="grid g3" style="margin-bottom:14px">
-      ${mini('Quá hạn chưa thu',fs(late),late>0?'neg':'pos','Khách đã quá ngày hẹn mà chưa chuyển. Gọi ngay — công nợ càng để lâu càng khó đòi.')}
-      ${mini('Dự kiến về trong 30 ngày',fs(in30),'pos','Dùng con số này so với chi phí cố định tháng để biết có đủ tiền sống không.')}
-      ${mini('Chưa hẹn ngày',fs(nodate),nodate>0?'hold':'','Đợt thanh toán chưa gắn ngày. Không có ngày thì không cân đối được dòng tiền.')}
+  return `<div class="stats" style="margin-bottom:14px">
+      <div class="stat"><div class="stat-l">Quá hạn chưa thu</div><div class="stat-v ${late>0?'neg':'pos'}">${fs(late)}</div></div>
+      <div class="stat"><div class="stat-l">Về trong 30 ngày</div><div class="stat-v pos">${fs(in30)}</div></div>
+      <div class="stat"><div class="stat-l">Chưa hẹn ngày</div><div class="stat-v ${nodate>0?'hold':''}">${fs(nodate)}</div></div>
     </div>
     ${due.length?`<div style="overflow-x:auto"><table><thead><tr><th>Dự án</th><th>Đợt</th><th>Ngày hẹn</th><th class="r">Số tiền</th></tr></thead><tbody>
     ${due.slice(0,12).map(x=>`<tr><td>${esc(x.p)}</td><td style="color:var(--muted)">${esc(x.l)}</td>
@@ -856,7 +867,7 @@ function alerts(list,t,gm){
 
 function tableProjects(ps){
   if(!ps.length)return '<p style="color:var(--muted)">Chưa có dự án.</p>';
-  return `<div style="overflow-x:auto"><table><thead><tr>
+  return `<div style="overflow-x:auto"><table class="plist"><thead><tr>
     <th>Dự án</th><th>Khách hàng</th><th>Trạng thái</th>
     <th class="r">Doanh thu thuần</th><th class="r">Biên gộp</th><th class="r">Lợi nhuận ròng</th><th class="r">Cần giữ lại</th></tr></thead><tbody>
     ${ps.map(p=>{const c=calc(p);return `<tr class="clickable" onclick="openP('${p.id}')">
@@ -1744,7 +1755,12 @@ document.addEventListener('click',e=>{
   if(e.target.classList&&e.target.classList.contains('hint')){
     document.querySelectorAll('.hint.open').forEach(h=>{if(h!==e.target)h.classList.remove('open')});
     e.target.classList.toggle('open');
-  } else document.querySelectorAll('.hint.open').forEach(h=>h.classList.remove('open'));
+    return;
+  }
+  document.querySelectorAll('.hint.open').forEach(h=>h.classList.remove('open'));
+  // mobile: chạm cảnh báo để xổ/gập phần giải thích
+  const al=e.target.closest&&e.target.closest('.alert');
+  if(al&&matchMedia('(max-width:900px)').matches)al.classList.toggle('open');
 });
 
 /* ============ KHỞI ĐỘNG ============ */
