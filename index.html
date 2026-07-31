@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Deeplab Finance — Bảng điều khiển tài chính dự án</title>
+<meta name="theme-color" content="#15171B">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Deeplab Finance">
+<link rel="apple-touch-icon" href="finance-icon-180.png">
+<link rel="icon" type="image/png" href="finance-icon.png">
+<link rel="manifest" href="app.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#15171B;
+  --panel:#1E2126;
+  --panel-2:#252930;
+  --line:#31363E;
+  --line-soft:#2A2E35;
+  --text:#E9EBEE;
+  --muted:#8B929C;
+  --dim:#5F666F;
+  --teal:#3AC5A2;
+  --amber:#E4A63C;
+  --clay:#D4705B;
+  --plum:#8E86DE;
+  --red:#E1574F;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--void);
+  color:var(--text);
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+  font-size:14px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+a{color:var(--teal)}
+
+/* ---------- shell ---------- */
+.shell{display:flex;min-height:100%}
+.rail{
+  width:212px;flex:0 0 212px;background:var(--panel);border-right:1px solid var(--line-soft);
+  padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;
+}
+.brand{padding:0 8px 22px;display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:26px;height:26px;border-radius:7px;flex:0 0 26px;
+  background:linear-gradient(145deg,var(--teal),#2a7d9e);
+  display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;color:#0d1114;
+}
+.brand-name{font-weight:600;letter-spacing:-.01em;line-height:1.1}
+.brand-sub{font-size:10px;color:var(--dim);letter-spacing:.09em;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.navbtn{
+  display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;
+  color:var(--muted);font-weight:500;text-align:left;width:100%;transition:.14s;
+}
+.navbtn:hover{background:var(--panel-2);color:var(--text)}
+.navbtn.on{background:var(--panel-2);color:var(--text)}
+.navbtn.on .navdot{background:var(--teal)}
+.navdot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex:0 0 5px}
+.rail-foot{margin-top:auto;padding:14px 8px 0;border-top:1px solid var(--line-soft);font-size:11px;color:var(--dim)}
+
+.main{flex:1;min-width:0;padding:26px 30px 80px;max-width:1180px}
+.page-head{margin-bottom:22px}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.page-desc{color:var(--muted);margin-top:4px;max-width:640px}
+
+/* ---------- primitives ---------- */
+.card{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:16px 18px}
+.card-title{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace;margin-bottom:12px}
+.grid{display:grid;gap:12px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;gap:10px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+.kpi{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--dim)}
+.kpi.teal::before{background:var(--teal)}
+.kpi.amber::before{background:var(--amber)}
+.kpi.clay::before{background:var(--clay)}
+.kpi.plum::before{background:var(--plum)}
+.kpi.red::before{background:var(--red)}
+.kpi-label{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+.kpi-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px;letter-spacing:-.03em;margin-top:6px;line-height:1.1}
+.kpi-sub{font-size:11px;color:var(--dim);margin-top:4px}
+.pos{color:var(--teal)} .neg{color:var(--red)} .hold{color:var(--amber)}
+
+.hint{
+  display:inline-grid;place-items:center;width:14px;height:14px;border-radius:50%;
+  border:1px solid var(--line);color:var(--dim);font-size:9px;font-family:'JetBrains Mono',monospace;
+  cursor:help;position:relative;flex:0 0 14px;
+}
+.hint:hover{border-color:var(--teal);color:var(--teal)}
+.hint::after{
+  content:attr(data-tip);position:absolute;bottom:150%;left:50%;transform:translateX(-50%);
+  width:250px;background:#0E1013;border:1px solid var(--line);border-radius:8px;padding:9px 11px;
+  font-family:'Be Vietnam Pro',sans-serif;font-size:12px;line-height:1.45;color:var(--text);
+  opacity:0;visibility:hidden;transition:.15s;z-index:60;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,.5);
+}
+.hint:hover::after,.hint.open::after{opacity:1;visibility:visible}
+
+label.f{display:block;margin-bottom:14px}
+.f-label{font-size:11px;color:var(--muted);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{
+  width:100%;background:var(--void);border:1px solid var(--line);border-radius:8px;
+  padding:9px 11px;outline:none;transition:.14s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(58,197,162,.12)}
+input.money{font-family:'JetBrains Mono',monospace;text-align:right;font-weight:500}
+textarea{resize:vertical;min-height:64px}
+input[type=range]{accent-color:var(--teal);background:none!important;border:none!important;padding:0!important;box-shadow:none!important;height:22px}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 16px) 52%,calc(100% - 11px) 52%;background-size:5px 5px;background-repeat:no-repeat}
+
+.btn{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 14px;font-weight:500;transition:.14s;display:inline-flex;align-items:center;gap:7px}
+.btn:hover{border-color:var(--dim);background:#2C313A}
+.btn-primary{background:var(--teal);border-color:var(--teal);color:#0C1512;font-weight:600}
+.btn-primary:hover{background:#48D6B2;border-color:#48D6B2}
+.btn-ghost{background:none;border:1px dashed var(--line);color:var(--muted)}
+.btn-ghost:hover{color:var(--text);border-color:var(--dim)}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.btn-danger:hover{border-color:var(--red);color:var(--red)}
+
+.chip{font-size:11px;padding:3px 9px;border-radius:20px;border:1px solid var(--line);color:var(--muted);font-family:'JetBrains Mono',monospace}
+.chip.on{border-color:var(--teal);color:var(--teal);background:rgba(58,197,162,.08)}
+.chip.warn{border-color:var(--amber);color:var(--amber);background:rgba(228,166,60,.08)}
+.chip.bad{border-color:var(--red);color:var(--red);background:rgba(225,87,79,.08)}
+
+table{width:100%;border-collapse:collapse}
+th{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace;text-align:left;padding:0 8px 9px;font-weight:500}
+td{padding:10px 8px;border-top:1px solid var(--line-soft);vertical-align:middle}
+th.r,td.r{text-align:right}
+tr.clickable:hover{background:var(--panel-2);cursor:pointer}
+
+.empty{border:1px dashed var(--line);border-radius:var(--r);padding:38px 20px;text-align:center;color:var(--muted)}
+.empty h3{font-size:15px;color:var(--text);margin-bottom:6px;font-weight:600}
+
+/* ---------- waterfall ---------- */
+.wf{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid var(--line-soft);background:var(--void)}
+.wf-seg{display:grid;place-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#101317;transition:.3s;overflow:hidden;white-space:nowrap}
+.wf-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px}
+.wf-item{display:flex;align-items:center;gap:7px;font-size:12px}
+.wf-key{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+.wf-amt{font-family:'JetBrains Mono',monospace;color:var(--muted);margin-left:auto}
+
+.ladder{display:flex;flex-direction:column}
+.ladder-row{display:flex;justify-content:space-between;align-items:baseline;padding:9px 0;border-bottom:1px solid var(--line-soft);gap:12px}
+.ladder-row:last-child{border-bottom:none}
+.ladder-row.total{border-top:1px solid var(--line);margin-top:4px;padding-top:12px}
+.ladder-name{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.ladder-row.total .ladder-name{color:var(--text);font-weight:600}
+.ladder-val{font-family:'JetBrains Mono',monospace;font-weight:500;white-space:nowrap}
+.ladder-row.total .ladder-val{font-size:17px;font-weight:700}
+
+.bar-track{height:6px;background:var(--void);border-radius:4px;overflow:hidden;flex:1;min-width:60px}
+.bar-fill{height:100%;border-radius:4px}
+
+.alert{display:flex;gap:11px;padding:11px 13px;border-radius:9px;border:1px solid;margin-bottom:8px;align-items:flex-start}
+.alert-red{border-color:rgba(225,87,79,.4);background:rgba(225,87,79,.07)}
+.alert-amber{border-color:rgba(228,166,60,.35);background:rgba(228,166,60,.06)}
+.alert-teal{border-color:rgba(58,197,162,.3);background:rgba(58,197,162,.05)}
+.alert-icon{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;flex:0 0 auto;margin-top:1px}
+.alert b{font-weight:600}
+.alert p{font-size:12.5px;color:var(--muted);margin-top:2px}
+
+.costrow{display:grid;grid-template-columns:1fr 116px 132px 132px 96px 32px;gap:8px;align-items:center;margin-bottom:7px}
+.costrow input,.costrow select{padding:7px 9px;font-size:13px}
+.costhead{display:grid;grid-template-columns:1fr 116px 132px 132px 96px 32px;gap:8px;padding:0 0 6px}
+.costhead span{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace}
+.costhead span.r{text-align:right}
+.icon-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);color:var(--dim);display:grid;place-items:center;font-size:15px;transition:.14s}
+.icon-btn:hover{border-color:var(--red);color:var(--red)}
+.quickadd{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.quickadd button{font-size:11.5px;padding:5px 11px;border-radius:20px;border:1px dashed var(--line);color:var(--muted)}
+.quickadd button:hover{border-color:var(--teal);color:var(--teal);border-style:solid}
+
+.tog{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--muted);user-select:none}
+.tog input{display:none}
+.tog-box{width:16px;height:16px;border-radius:5px;border:1px solid var(--line);display:grid;place-items:center;font-size:10px;color:transparent;transition:.14s}
+.tog input:checked + .tog-box{background:var(--teal);border-color:var(--teal);color:#0C1512}
+
+.split{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:start}
+.sticky-side{position:sticky;top:26px}
+.back{color:var(--muted);font-size:13px;display:inline-flex;align-items:center;gap:6px;margin-bottom:12px}
+.back:hover{color:var(--text)}
+
+.dict dt{font-weight:600;margin-top:16px;display:flex;align-items:center;gap:8px}
+.dict dd{color:var(--muted);font-size:13px;margin-top:3px}
+.dict code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--void);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;color:var(--teal)}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;transition:.25s;opacity:0;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(max-width:900px){
+  .shell{flex-direction:column}
+  .rail{width:auto;flex:none;height:auto;position:sticky;top:0;z-index:50;flex-direction:row;overflow-x:auto;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;gap:6px;align-items:center}
+  .brand{padding:0 10px 0 4px;flex:0 0 auto}
+  .brand-sub{display:none}
+  .navbtn{width:auto;white-space:nowrap;padding:8px 12px}
+  .rail-foot{display:none}
+  .main{padding:18px 16px 60px}
+  .g4,.g3,.g2{grid-template-columns:1fr 1fr}
+  .split{grid-template-columns:1fr}
+  .sticky-side{position:static}
+  .costrow,.costhead{grid-template-columns:1fr 1fr;gap:6px}
+  .costhead{display:none}
+  .costrow{padding:10px;border:1px solid var(--line-soft);border-radius:9px;margin-bottom:9px}
+  .hint::after{width:200px}
+}
+@media(max-width:520px){.g4,.g3,.g2{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="rail">
+    <div class="brand">
+      <div class="brand-mark">₫</div>
+      <div>
+        <div class="brand-name">Deeplab</div>
+        <div class="brand-sub">Finance</div>
+      </div>
+    </div>
+    <button class="navbtn on" data-tab="dash"><span class="navdot"></span>Tổng quan</button>
+    <button class="navbtn" data-tab="projects"><span class="navdot"></span>Dự án</button>
+    <button class="navbtn" data-tab="jars"><span class="navdot"></span>Chia hũ tiền</button>
+    <button class="navbtn" data-tab="quote"><span class="navdot"></span>Tính giá chào</button>
+    <button class="navbtn" data-tab="settings"><span class="navdot"></span>Chi phí cố định</button>
+    <button class="navbtn" data-tab="dict"><span class="navdot"></span>Từ điển chỉ số</button>
+    <div class="rail-foot"><span id="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.</div>
+  </nav>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ CONSTANTS ============ */
+const KEY='deeplab-finance-v1';
+const CAT=['Nhân sự','Thiết bị','Bối cảnh','Hậu kỳ','Đi lại & ăn ở','Đạo cụ','Bản quyền','Khác'];
+const QUICK=[
+  ['Đạo diễn / DOP','Nhân sự'],['Quay phim','Nhân sự'],['Trợ lý sản xuất','Nhân sự'],
+  ['Diễn viên / mẫu','Nhân sự'],['Dựng phim','Hậu kỳ'],['Colorist','Hậu kỳ'],['Motion / VFX','Hậu kỳ'],
+  ['Thuê máy + ống kính','Thiết bị'],['Ánh sáng','Thiết bị'],['Thuê bối cảnh','Bối cảnh'],
+  ['Đi lại','Đi lại & ăn ở'],['Ăn uống đoàn','Đi lại & ăn ở'],['Đạo cụ','Đạo cụ'],['Nhạc bản quyền','Bản quyền']
+];
+const DEF={
+  settings:{
+    vat:8, cit:20, pit:10, workDays:22, allocMethod:'days',
+    overheadPct:12, targetGM:45, ownerSalary:25000000,
+    reservePct:8, reserveBalance:0, reserveMonths:3, avgRevenue:80000000,
+    citExempt:false, citUntil:'', pitThreshold:5000000,
+    jarTax:12, jarOps:23, jarReserve:8,
+    overhead:[
+      {id:u(),name:'Thuê văn phòng + điện nước + wifi',amount:10000000,inv:true},
+      {id:u(),name:'Kế toán thuê ngoài',amount:1000000,inv:true},
+      {id:u(),name:'Bộ công cụ AI (Claude, GPT, Gemini)',amount:2800000,inv:false},
+      {id:u(),name:'Hosting / server',amount:400000,inv:false},
+      {id:u(),name:'Tên miền, phần mềm khác',amount:300000,inv:false},
+      {id:u(),name:'Khấu hao thiết bị quay dựng',amount:4000000,inv:false},
+      {id:u(),name:'Dự phòng (sửa máy, tiếp khách, phát sinh)',amount:2000000,inv:false}
+    ]
+  },
+  projects:[]
+};
+
+/* ============ STATE ============ */
+let S=JSON.parse(JSON.stringify(DEF));
+let tab='dash', openId=null, quote={cost:0,days:3,gm:45}, jar={amount:0,project:''};
+
+function u(){return Math.random().toString(36).slice(2,9)}
+function n(v){v=parseFloat(v);return isFinite(v)?v:0}
+const nf=new Intl.NumberFormat('vi-VN');
+function f(v){return nf.format(Math.round(n(v)))}
+function fs(v){ // dạng ngắn
+  v=n(v);const a=Math.abs(v),s=v<0?'-':'';
+  if(a>=1e9)return s+(a/1e9).toFixed(a>=1e10?1:2).replace('.',',')+' tỷ';
+  if(a>=1e6)return s+(a/1e6).toFixed(a>=1e8?0:1).replace('.',',')+' tr';
+  if(a>=1e3)return s+Math.round(a/1e3)+'k';
+  return s+Math.round(a);
+}
+function pc(v){return (n(v)*100).toFixed(1).replace('.',',')+'%'}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
+
+/* ============ STORAGE ============ */
+const hasHost = typeof window!=='undefined' && window.storage && typeof window.storage.get==='function';
+let localOK=false;
+if(!hasHost){ try{ localStorage.setItem('_t','1'); localStorage.removeItem('_t'); localOK=true }catch(e){ localOK=false } }
+
+async function readRaw(){
+  if(hasHost){ const r=await window.storage.get(KEY); return r&&r.value }
+  if(localOK) return localStorage.getItem(KEY);
+  return null;
+}
+async function writeRaw(v){
+  if(hasHost) return window.storage.set(KEY,v);
+  if(localOK) return localStorage.setItem(KEY,v);
+  throw new Error('no storage');
+}
+async function load(){
+  try{
+    const v=await readRaw();
+    if(v){const d=JSON.parse(v);S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],updatedAt:d.updatedAt||0}}
+  }catch(e){/* chưa có dữ liệu — dùng mặc định */}
+}
+let saveT=null, warned=false;
+function save(){
+  clearTimeout(saveT);
+  saveT=setTimeout(async()=>{
+    S.updatedAt=Date.now();
+    try{ await writeRaw(JSON.stringify(S)) }
+    catch(e){ if(!warned){warned=true;toast('Trình duyệt này không cho lưu. Hãy bấm Sao lưu JSON trước khi đóng.')} }
+    ghSchedule();
+  },400);
+}
+
+/* ============ ĐỒNG BỘ GITHUB ============ */
+/* Dữ liệu đẩy lên repo PRIVATE deeplab-finance-data dưới dạng data.json + bao-cao.md.
+   Token là fine-grained PAT chỉ có quyền Contents trên đúng repo đó, lưu trong localStorage của từng máy. */
+const GHD={owner:'deeplab-media',repo:'deeplab-finance-data',branch:'main'};
+let ghShaData=null, ghShaRep=null, ghTimer=null, ghBusy=false, ghLast=0, ghState='off';
+function ghTok(){try{return localStorage.getItem('dlf-gh-token')||''}catch(e){return ''}}
+function b64e(s){return btoa(unescape(encodeURIComponent(s)))}
+function b64d(s){return decodeURIComponent(escape(atob(String(s).replace(/\n/g,''))))}
+function ghSetState(st){
+  ghState=st;
+  const el=document.getElementById('syncdot');
+  if(el){
+    const map={off:['—','var(--dim)','Chưa bật đồng bộ'],idle:['●','var(--dim)','Đã kết nối'],pending:['●','var(--amber)','Đang đồng bộ…'],ok:['●','var(--teal)','Đã đồng bộ'],error:['●','var(--red)','Lỗi đồng bộ']};
+    const m=map[st]||map.off;
+    el.innerHTML='<span style="color:'+m[1]+'">'+m[0]+'</span> '+m[2]+(st==='ok'&&ghLast?' '+new Date(ghLast).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'');
+  }
+  if(tab==='settings'){const st2=document.getElementById('ghstatus');if(st2)st2.textContent=({off:'Chưa kết nối',idle:'Đã kết nối, chưa đồng bộ lần nào',pending:'Đang đồng bộ…',ok:'Đồng bộ lần cuối: '+(ghLast?new Date(ghLast).toLocaleString('vi-VN'):''),error:'Lỗi — kiểm tra mạng hoặc token'})[st]||''}
+}
+async function ghReq(method,path,body){
+  const r=await fetch('https://api.github.com/repos/'+GHD.owner+'/'+GHD.repo+'/'+path,{
+    method:method,
+    headers:{'Authorization':'Bearer '+ghTok(),'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},
+    body:body?JSON.stringify(body):undefined
+  });
+  return r;
+}
+async function ghPull(){
+  const r=await ghReq('GET','contents/data.json?ref='+GHD.branch+'&t='+Date.now());
+  if(r.status===404){ghShaData=null;return null}
+  if(!r.ok)throw new Error('GitHub '+r.status);
+  const j=await r.json();
+  ghShaData=j.sha;
+  try{return JSON.parse(b64d(j.content))}catch(e){return null}
+}
+function ghAdopt(d){
+  S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],updatedAt:d.updatedAt||0};
+  writeRaw(JSON.stringify(S)).catch(()=>{});
+  render();
+}
+async function ghPushFile(path,content,sha){
+  const body={message:'Deeplab Finance sync '+new Date().toISOString(),content:b64e(content),branch:GHD.branch};
+  if(sha)body.sha=sha;
+  const r=await ghReq('PUT','contents/'+path,body);
+  if(!r.ok)throw Object.assign(new Error('GitHub '+r.status),{status:r.status});
+  const j=await r.json();
+  return j.content&&j.content.sha;
+}
+async function ghSync(pullOnly){
+  if(!ghTok()||ghBusy)return;
+  ghBusy=true;ghSetState('pending');
+  try{
+    const remote=await ghPull();
+    if(remote&&(remote.updatedAt||0)>(S.updatedAt||0)){
+      ghAdopt(remote);
+      toast('Đã lấy dữ liệu mới hơn từ máy khác');
+    }else if(!pullOnly&&(S.updatedAt||0)>((remote&&remote.updatedAt)||0)){
+      ghShaData=await ghPushFile('data.json',JSON.stringify(S,null,1),ghShaData);
+      try{
+        if(ghShaRep===null){const r0=await ghReq('GET','contents/bao-cao.md?ref='+GHD.branch);if(r0.ok){const j0=await r0.json();ghShaRep=j0.sha}}
+        ghShaRep=await ghPushFile('bao-cao.md',aiReport(),ghShaRep);
+      }catch(e){/* báo cáo lỗi không chặn đồng bộ dữ liệu */}
+    }
+    ghLast=Date.now();ghSetState('ok');
+  }catch(e){
+    if(e&&(e.status===409||e.status===422)){ghShaData=null;ghShaRep=null;ghSetState('idle');ghSchedule();}
+    else ghSetState('error');
+  }
+  ghBusy=false;
+}
+function ghSchedule(){
+  if(!ghTok())return;
+  clearTimeout(ghTimer);
+  ghTimer=setTimeout(()=>ghSync(false),2500);
+}
+async function ghConnect(){
+  const inp=document.getElementById('ghtoken');
+  const t=(inp&&inp.value||'').trim();
+  if(!t){toast('Dán token vào ô trước đã');return}
+  try{localStorage.setItem('dlf-gh-token',t)}catch(e){toast('Trình duyệt không cho lưu token');return}
+  ghShaData=null;ghShaRep=null;
+  let r;
+  try{r=await ghReq('GET','')}
+  catch(e){
+    try{localStorage.removeItem('dlf-gh-token')}catch(e2){}
+    toast('Không kết nối được GitHub — kiểm tra mạng rồi thử lại');
+    ghSetState('off');return;
+  }
+  if(!r.ok){
+    try{localStorage.removeItem('dlf-gh-token')}catch(e){}
+    toast(r.status===404?'Token không có quyền vào repo '+GHD.repo:'Token không hợp lệ ('+r.status+')');
+    ghSetState('off');return;
+  }
+  toast('Kết nối thành công — đang đồng bộ…');
+  await ghSync(false);
+  if(tab==='settings')render();
+}
+function ghDisconnect(){
+  try{localStorage.removeItem('dlf-gh-token')}catch(e){}
+  ghShaData=null;ghShaRep=null;ghSetState('off');
+  toast('Đã ngắt đồng bộ trên máy này');
+  if(tab==='settings')render();
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ghTok())ghSync(true)});
+
+/* ============ TÍNH TOÁN ============ */
+function ohMonthly(){return S.settings.overhead.reduce((a,b)=>a+n(b.amount),0)+n(S.settings.ownerSalary)}
+function ohDeductibleRatio(){
+  const t=S.settings.overhead.reduce((a,b)=>a+n(b.amount),0)+n(S.settings.ownerSalary);
+  if(t<=0)return 0;
+  const d=S.settings.overhead.filter(o=>o.inv).reduce((a,b)=>a+n(b.amount),0);
+  return d/t; // lương chủ mặc định coi là không có chứng từ hợp lệ
+}
+function ohPerDay(){return ohMonthly()/Math.max(1,n(S.settings.workDays))}
+
+function calc(p){
+  const v=n(S.settings.vat)/100, cit=n(S.settings.cit)/100, pit=n(S.settings.pit)/100;
+  const gross=n(p.contract);
+  const netRev=p.vatIncluded? gross/(1+v) : gross;
+  const vatOut=netRev*v;
+  const billed=netRev+vatOut;
+
+  let dGross=0,dNet=0,vatIn=0,deduct=0,planned=0,people=0;
+  (p.costs||[]).forEach(c=>{
+    const act=(c.actual===''||c.actual==null)? n(c.planned) : n(c.actual);
+    const net=c.inv? act/(1+v) : act;
+    dGross+=act; dNet+=net; planned+=n(c.planned);
+    if(c.inv){vatIn+=act-net; deduct+=net}
+    if(!c.inv&&act>=n(S.settings.pitThreshold)) people+=act;
+  });
+
+  const gp=netRev-dNet;
+  const gm=netRev>0? gp/netRev : 0;
+
+  const oh = S.settings.allocMethod==='days'
+    ? ohPerDay()*n(p.days)
+    : netRev*n(S.settings.overheadPct)/100;
+
+  const ebt=gp-oh;
+  const taxable=netRev-deduct-oh*ohDeductibleRatio();
+  const today=new Date().toISOString().slice(0,10);
+  const citFree=!!S.settings.citExempt && (!S.settings.citUntil || (p.date||today)<=S.settings.citUntil);
+  const citAmt=citFree? 0 : Math.max(0,taxable*cit);
+  const net=ebt-citAmt;
+  const nm=netRev>0? net/netRev : 0;
+  const invested=dNet+oh;
+  const roi=invested>0? net/invested : 0;
+  const markup=dNet>0? gp/dNet : 0;
+  const vatPay=vatOut-vatIn;
+  const pitHold=people*pit;
+
+  const collected=(p.payments||[]).filter(x=>x.got).reduce((a,b)=>a+n(b.amount),0);
+  const receivable=billed-collected;
+  const locked=Math.max(0,vatPay)+citAmt;
+  const cash=collected-dGross-locked;
+  const noInvRatio=dGross>0? (dGross-(p.costs||[]).filter(c=>c.inv).reduce((a,b)=>a+((b.actual===''||b.actual==null)?n(b.planned):n(b.actual)),0))/dGross : 0;
+  const overrun=planned>0? (dGross-planned)/planned : 0;
+
+  return {citFree,gross,netRev,vatOut,billed,dGross,dNet,vatIn,deduct,gp,gm,oh,ebt,taxable,citAmt,net,nm,roi,markup,
+          vatPay,pitHold,collected,receivable,locked,cash,noInvRatio,overrun,planned,invested};
+}
+function actives(){return S.projects.filter(p=>p.status!=='quote')}
+
+/* ============ BÁO CÁO CHO AI ============ */
+function aiReport(){
+  const s=S.settings, today=new Date().toISOString().slice(0,10);
+  const st={running:'Đang chạy',done:'Đã xong',quote:'Báo giá'};
+  const pct=v=>(v*100).toFixed(1)+'%';
+  const L=[];
+  L.push('# Báo cáo tài chính Deeplab Media — cập nhật '+new Date().toLocaleString('vi-VN'));
+  L.push('');
+  L.push('Số liệu xuất tự động từ app Deeplab Finance (đơn vị: VND). Bạn (AI) hãy đóng vai CFO: đọc số liệu, chỉ ra rủi ro dòng tiền, dự án đang rò rỉ lợi nhuận ở đâu, và 3 việc cần làm ngay. Bối cảnh: công ty một người (agency sản xuất video tại VN), chủ doanh nghiệp không có nền tảng tài chính — giải thích bằng ngôn ngữ đời thường.');
+  L.push('');
+  L.push('## Bộ máy cố định hàng tháng');
+  s.overhead.forEach(o=>L.push('- '+o.name+': '+f(o.amount)+' ('+(o.inv?'có hoá đơn':'KHÔNG hoá đơn')+')'));
+  L.push('- Lương chủ doanh nghiệp tự trả mình: '+f(s.ownerSalary));
+  L.push('- **Tổng phải gánh mỗi tháng: '+f(ohMonthly())+'** — quy ra '+f(ohPerDay())+'/ngày công ('+s.workDays+' ngày/tháng)');
+  L.push('- Phân bổ vào dự án: '+(s.allocMethod==='days'?'theo số ngày công':'theo '+s.overheadPct+'% doanh thu thuần'));
+  L.push('- Thuế: VAT '+s.vat+'%, TNDN '+s.cit+'%'+(s.citExempt?' (ĐANG MIỄN'+(s.citUntil?' đến '+s.citUntil:'')+')':'')+', TNCN khấu trừ freelancer '+s.pit+'% từ '+f(s.pitThreshold)+'/lần');
+  L.push('- Biên gộp mục tiêu: '+s.targetGM+'%');
+  L.push('');
+  L.push('## Từng dự án');
+  if(!S.projects.length)L.push('(Chưa có dự án nào)');
+  S.projects.forEach(p=>{
+    const c=calc(p);
+    L.push('');
+    L.push('### '+(p.name||'(chưa đặt tên)')+(p.client?' — khách: '+p.client:''));
+    L.push('- Trạng thái: '+(st[p.status]||p.status)+' | Ngày công: '+n(p.days)+(p.date?' | Ngày nghiệm thu: '+p.date:''));
+    L.push('- Hợp đồng: '+f(c.gross)+(p.vatIncluded?' (đã gồm VAT)':' (chưa gồm VAT)')+' → Doanh thu thuần: '+f(c.netRev)+' | VAT đầu ra: '+f(c.vatOut));
+    L.push('- Chi phí trực tiếp: dự trù '+f(c.planned)+' / thực chi '+f(c.dGross)+(c.overrun?' (lệch '+pct(c.overrun)+')':''));
+    (p.costs||[]).forEach(x=>{
+      const act=(x.actual===''||x.actual==null)?n(x.planned):n(x.actual);
+      L.push('  - '+(x.name||'(chưa ghi tên)')+' ['+x.cat+']: dự trù '+f(x.planned)+', thực chi '+f(act)+', '+(x.inv?'có hoá đơn':'KHÔNG hoá đơn'));
+    });
+    L.push('- Lợi nhuận gộp: '+f(c.gp)+' (biên gộp '+pct(c.gm)+') | Chi phí cố định phân bổ: '+f(c.oh));
+    L.push('- Lợi nhuận trước thuế: '+f(c.ebt)+' | Thuế TNDN: '+(c.citFree?'0 (đang miễn)':f(c.citAmt))+' | **Lợi nhuận ròng: '+f(c.net)+'** (biên ròng '+pct(c.nm)+', ROI '+pct(c.roi)+')');
+    L.push('- TNCN phải khấu trừ nộp thay: '+f(c.pitHold)+' | VAT phải nộp (sau khấu trừ đầu vào): '+f(c.vatPay));
+    const pays=(p.payments||[]);
+    if(pays.length){
+      L.push('- Lịch thanh toán:');
+      pays.forEach(y=>{
+        const od=!y.got&&y.date&&y.date<today;
+        L.push('  - '+(y.label||'Đợt')+': '+f(y.amount)+(y.date?' — hẹn '+y.date:' — CHƯA HẸN NGÀY')+' — '+(y.got?'ĐÃ VỀ':(od?'QUÁ HẠN':'chưa về')));
+      });
+    }
+    L.push('- Đã thu: '+f(c.collected)+' | Còn phải thu: '+f(c.receivable)+' | Tiền phải giữ lại (VAT+TNDN): '+f(c.locked)+' | Tiền mặt thực còn: '+f(c.cash));
+  });
+  const list=actives().map(p=>calc(p));
+  const t=list.reduce((a,c)=>({rev:a.rev+c.netRev,gp:a.gp+c.gp,net:a.net+c.net,locked:a.locked+c.locked,recv:a.recv+c.receivable,cash:a.cash+c.cash}),{rev:0,gp:0,net:0,locked:0,recv:0,cash:0});
+  const gm=t.rev>0?t.gp/t.rev:0;
+  L.push('');
+  L.push('## Tổng hợp (không tính báo giá)');
+  L.push('- Doanh thu thuần: '+f(t.rev)+' | Lợi nhuận gộp: '+f(t.gp)+' (biên '+pct(gm)+') | Lợi nhuận ròng: '+f(t.net));
+  L.push('- Còn phải thu: '+f(t.recv)+' | Tiền phải giữ lại nộp thuế: '+f(t.locked)+' | Tiền mặt thực: '+f(t.cash));
+  L.push('- Doanh thu hoà vốn cần mỗi tháng (theo biên gộp hiện tại): '+(gm>0?f(ohMonthly()/gm):'không tính được — chưa có biên gộp'));
+  return L.join('\n');
+}
+async function aiCopy(){
+  const txt=aiReport();
+  try{
+    await navigator.clipboard.writeText(txt);
+    toast('Đã copy báo cáo — dán vào Claude/ChatGPT để hỏi');
+  }catch(e){
+    if(navigator.share){try{await navigator.share({text:txt});return}catch(e2){}}
+    const b=new Blob([txt],{type:'text/markdown'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='bao-cao-ai.md';a.click();
+    toast('Đã tải file báo cáo');
+  }
+}
+
+/* ============ RENDER ============ */
+function render(){
+  document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  const m=document.getElementById('main');
+  m.innerHTML = tab==='dash'?viewDash() : tab==='projects'?(openId?viewProject():viewList()) :
+                tab==='jars'?viewJars() : tab==='quote'?viewQuote() :
+                tab==='settings'?viewSettings() : viewDict();
+  m.scrollTop=0;
+}
+
+/* ---------- TỔNG QUAN ---------- */
+function viewDash(){
+  const list=actives().map(p=>({p,c:calc(p)}));
+  const t=list.reduce((a,{c})=>({
+    rev:a.rev+c.netRev, gp:a.gp+c.gp, oh:a.oh+c.oh, net:a.net+c.net,
+    locked:a.locked+c.locked, recv:a.recv+c.receivable, cash:a.cash+c.cash, cost:a.cost+c.dNet, pit:a.pit+c.pitHold
+  }),{rev:0,gp:0,oh:0,net:0,locked:0,recv:0,cash:0,cost:0,pit:0});
+  const gm=t.rev>0?t.gp/t.rev:0;
+  const nm=t.rev>0?t.net/t.rev:0;
+  const be=gm>0? ohMonthly()/gm : 0;
+
+  if(!S.projects.length) return `
+    <div class="page-head"><div class="page-title">Tổng quan</div>
+    <div class="page-desc">Chưa có dự án nào. Hãy tạo dự án đầu tiên để xem tiền thật sự đi đâu.</div></div>
+    <div class="empty"><h3>Bắt đầu từ một dự án</h3>
+    <p style="margin-bottom:16px">Nhập tổng giá trị hợp đồng và các khoản chi. Công cụ sẽ tự bóc VAT, phân bổ chi phí cố định và tính thuế.</p>
+    <button class="btn btn-primary" onclick="newProject()">+ Tạo dự án</button></div>`;
+
+  return `
+  <div class="page-head"><div class="page-title">Tổng quan</div>
+  <div class="page-desc">Số liệu tổng hợp từ ${list.length} dự án đang chạy và đã xong.</div></div>
+
+  <div class="grid g4" style="margin-bottom:14px">
+    ${kpi('Doanh thu thuần','plum',fs(t.rev),'Đã bóc VAT ra khỏi hợp đồng','Tổng tiền hợp đồng sau khi trừ phần VAT. Đây mới là doanh thu thật của công ty, VAT chỉ là thu hộ nhà nước.')}
+    ${kpi('Biên lợi nhuận gộp','teal',pc(gm),'Ngành sản xuất TVC thường 35–55%','Gross Margin = (Doanh thu thuần − Chi phí trực tiếp) / Doanh thu thuần. Cho biết mỗi 100đ doanh thu còn lại bao nhiêu sau chi phí sản xuất.')}
+    ${kpi('Lợi nhuận ròng','teal',fs(t.net),'Biên ròng '+pc(nm),'Net Profit = Lợi nhuận gộp − Chi phí cố định phân bổ − Thuế TNDN. Đây là số tiền thực sự thuộc về bạn.')}
+    ${kpi('Tiền phải giữ lại','amber',fs(t.locked),'VAT + thuế TNDN chưa nộp','Tiền này nằm trong tài khoản nhưng KHÔNG phải của bạn. Tiêu vào đây là đang vay nợ nhà nước.')}
+  </div>
+
+  <div class="grid g3" style="margin-bottom:14px">
+    ${kpi('Tiền được phép tiêu','teal',fs(t.cash),'Đã thu − đã chi − tiền giữ hộ','Free Cash = Tiền khách đã trả − chi phí đã trả cho dự án − VAT và thuế phải giữ. Con số này mới là tiền tiêu được.')}
+    ${kpi('Công nợ phải thu','clay',fs(t.recv),'Khách chưa thanh toán','Accounts Receivable. Đã ghi nhận doanh thu nhưng tiền chưa về. Lãi trên giấy nằm hết ở đây.')}
+    ${kpi('Doanh thu hoà vốn / tháng','amber',fs(be),'Cần '+f(Math.ceil(be/Math.max(1,t.rev/Math.max(1,list.length))))+' dự án cỡ trung bình','Break-even Revenue = Chi phí cố định tháng / Biên lợi nhuận gộp. Dưới mức này là lỗ dù từng dự án nhìn có lãi.')}
+  </div>
+
+  ${alerts(list,t,gm)}
+  ${cashflowCard()}
+
+  <div class="split" style="margin-top:14px">
+    <div class="card">
+      <div class="card-title">Biên lợi nhuận ròng theo dự án</div>
+      ${list.length?list.sort((a,b)=>b.c.nm-a.c.nm).map(({p,c})=>{
+        const w=Math.min(100,Math.abs(c.nm)*100/0.5*1);
+        return `<div class="row" style="margin-bottom:11px">
+          <div style="width:38%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px">${esc(p.name||'Chưa đặt tên')}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,w)}%;background:${c.nm>=0?'var(--teal)':'var(--red)'}"></div></div>
+          <div class="mono ${c.nm>=0?'pos':'neg'}" style="width:64px;text-align:right;font-size:12px">${pc(c.nm)}</div>
+        </div>`}).join(''):'<p style="color:var(--muted)">Chưa có dữ liệu.</p>'}
+    </div>
+    <div class="card">
+      <div class="card-title">Cấu trúc chi phí cố định / tháng</div>
+      <div class="ladder">
+        <div class="ladder-row"><span class="ladder-name">Chi phí vận hành</span><span class="ladder-val">${f(ohMonthly()-n(S.settings.ownerSalary))} ₫</span></div>
+        <div class="ladder-row"><span class="ladder-name">Lương chủ (bạn) <span class="hint" data-tip="Công sức của bạn là chi phí thật. Không tính vào đây thì mọi dự án đều 'có lãi' một cách giả tạo.">i</span></span><span class="ladder-val">${f(S.settings.ownerSalary)} ₫</span></div>
+        <div class="ladder-row total"><span class="ladder-name">Tổng phải gánh</span><span class="ladder-val hold">${f(ohMonthly())} ₫</span></div>
+        <div class="ladder-row"><span class="ladder-name">Chi phí mỗi ngày công</span><span class="ladder-val">${f(ohPerDay())} ₫</span></div>
+      </div>
+      <button class="btn btn-sm" style="margin-top:12px" onclick="go('settings')">Chỉnh chi phí cố định</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="spread" style="margin-bottom:12px">
+      <div class="card-title" style="margin:0">Danh sách dự án</div>
+      <div class="row"><button class="btn btn-sm" onclick="exportXLSX()">Xuất Excel</button>
+      <button class="btn btn-sm btn-primary" onclick="newProject()">+ Dự án mới</button></div>
+    </div>
+    ${tableProjects(S.projects)}
+  </div>`;
+}
+
+
+function cashflowCard(){
+  const today=new Date().toISOString().slice(0,10);
+  const due=[];
+  S.projects.forEach(p=>{ if(p.status==='quote')return;
+    (p.payments||[]).forEach(y=>{ if(!y.got&&n(y.amount)>0)
+      due.push({p:p.name||'Chưa đặt tên',l:y.label,a:n(y.amount),d:y.date||'',late:y.date&&y.date<today}) })});
+  due.sort((a,b)=>(a.d||'9999')<(b.d||'9999')?-1:1);
+  const late=due.filter(x=>x.late).reduce((a,b)=>a+b.a,0);
+  const in30=due.filter(x=>!x.late&&x.d&&x.d<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).reduce((a,b)=>a+b.a,0);
+  const nodate=due.filter(x=>!x.d).reduce((a,b)=>a+b.a,0);
+  return `<div class="card" style="margin-top:14px">
+    <div class="card-title">Lịch tiền về &amp; công nợ</div>
+    <div class="grid g3" style="margin-bottom:14px">
+      ${mini('Quá hạn chưa thu',fs(late),late>0?'neg':'pos','Khách đã quá ngày hẹn mà chưa chuyển. Gọi ngay — công nợ càng để lâu càng khó đòi.')}
+      ${mini('Dự kiến về trong 30 ngày',fs(in30),'pos','Dùng con số này so với chi phí cố định tháng để biết có đủ tiền sống không.')}
+      ${mini('Chưa hẹn ngày',fs(nodate),nodate>0?'hold':'','Đợt thanh toán chưa gắn ngày. Không có ngày thì không cân đối được dòng tiền.')}
+    </div>
+    ${due.length?`<div style="overflow-x:auto"><table><thead><tr><th>Dự án</th><th>Đợt</th><th>Ngày hẹn</th><th class="r">Số tiền</th></tr></thead><tbody>
+    ${due.slice(0,12).map(x=>`<tr><td>${esc(x.p)}</td><td style="color:var(--muted)">${esc(x.l)}</td>
+      <td class="mono" style="font-size:12px">${x.d?esc(x.d):'<span style="color:var(--amber)">chưa hẹn</span>'} ${x.late?'<span class="chip bad">quá hạn</span>':''}</td>
+      <td class="r mono">${f(x.a)}</td></tr>`).join('')}</tbody></table></div>`
+    :'<p style="color:var(--muted);font-size:13px">Chưa có đợt thanh toán nào đang chờ. Vào từng dự án, thêm lịch thanh toán 50/50 để theo dõi dòng tiền.</p>'}
+    <div style="margin-top:12px;font-size:12px;color:var(--dim)">So sánh nhanh: chi phí cố định mỗi tháng của anh là <b class="mono" style="color:var(--muted)">${f(ohMonthly())} ₫</b>.</div>
+  </div>`;
+}
+
+function kpi(label,tone,val,sub,tip){
+  return `<div class="kpi ${tone}">
+    <div class="kpi-label">${label} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div>
+    <div class="kpi-val ${tone==='teal'?(String(val).startsWith('-')?'neg':'pos'):tone==='amber'?'hold':''}">${val}</div>
+    <div class="kpi-sub">${sub}</div></div>`;
+}
+
+function alerts(list,t,gm){
+  const A=[];
+  if(t.locked>0)A.push(['amber','!','Bạn đang giữ hộ nhà nước '+f(t.locked)+' ₫',
+    'Gồm VAT phải nộp và thuế TNDN. Hãy tách khoản này sang một tài khoản riêng ngay khi tiền về — đây là nguyên nhân số một khiến "tính thì lãi mà cuối kỳ hết tiền".']);
+  if(S.settings.citExempt)A.push(['teal','✓','Đang trong thời gian miễn thuế TNDN'+(S.settings.citUntil?' đến hết '+S.settings.citUntil:''),
+    'Ba năm này là cơ hội tích quỹ. Hết hạn, mức 20% quay lại — hãy vẫn trích đều vào hũ Dự trữ như thể đang phải nộp.']);
+  if(t.pit>0)A.push(['amber','!','Thuế TNCN khấu trừ freelancer ước tính '+f(t.pit)+' ₫',
+    'Áp dụng cho khoản chi từ '+f(S.settings.pitThreshold)+' ₫/lần trở lên cho cá nhân không ký hợp đồng lao động. Nếu bạn trả đủ 100% cho họ, phần này bạn phải móc túi bù.']);
+  list.forEach(({p,c})=>{
+    if(c.net<0)A.push(['red','×','Dự án "'+esc(p.name)+'" đang lỗ '+f(-c.net)+' ₫','Sau khi gánh chi phí cố định và thuế, dự án này ăn vào tiền của công ty.']);
+    else if(c.gm*100<n(S.settings.targetGM))A.push(['amber','!','"'+esc(p.name)+'" có biên gộp '+pc(c.gm)+', thấp hơn mục tiêu '+S.settings.targetGM+'%','Giá bán quá thấp hoặc chi phí sản xuất vượt dự kiến.']);
+    if(c.overrun>0.15)A.push(['red','×','"'+esc(p.name)+'" vượt ngân sách '+pc(c.overrun),'Chi thực tế '+fs(c.dGross)+' so với dự trù '+fs(c.planned)+'. Đây là chỗ lợi nhuận bốc hơi.']);
+    if(c.noInvRatio>0.4&&c.dGross>0)A.push(['amber','!','"'+esc(p.name)+'": '+pc(c.noInvRatio)+' chi phí không có hoá đơn','Phần này không được trừ khi tính thuế TNDN, nên bạn nộp thuế trên khoản tiền đã tiêu mất.']);
+  });
+  if(t.recv>t.rev*0.4&&t.rev>0)A.push(['amber','!','Công nợ chiếm '+pc(t.recv/t.rev)+' doanh thu','Lợi nhuận đang nằm ở chỗ khách hàng chứ không phải trong tài khoản.']);
+  if(!A.length)A.push(['teal','✓','Chưa phát hiện rủi ro tài chính nào','Các dự án đều đạt biên mục tiêu và không có khoản giữ hộ tồn đọng.']);
+  return `<div style="margin-bottom:2px">${A.slice(0,7).map(([k,i,ti,d])=>
+    `<div class="alert alert-${k}"><div class="alert-icon" style="color:var(--${k==='red'?'red':k==='amber'?'amber':'teal'})">${i}</div>
+     <div><b>${ti}</b><p>${d}</p></div></div>`).join('')}</div>`;
+}
+
+function tableProjects(ps){
+  if(!ps.length)return '<p style="color:var(--muted)">Chưa có dự án.</p>';
+  return `<div style="overflow-x:auto"><table><thead><tr>
+    <th>Dự án</th><th>Khách hàng</th><th>Trạng thái</th>
+    <th class="r">Doanh thu thuần</th><th class="r">Biên gộp</th><th class="r">Lợi nhuận ròng</th><th class="r">Cần giữ lại</th></tr></thead><tbody>
+    ${ps.map(p=>{const c=calc(p);return `<tr class="clickable" onclick="openP('${p.id}')">
+      <td><b>${esc(p.name||'Chưa đặt tên')}</b></td>
+      <td style="color:var(--muted)">${esc(p.client||'—')}</td>
+      <td><span class="chip ${p.status==='done'?'on':p.status==='quote'?'':'warn'}">${p.status==='done'?'Đã xong':p.status==='quote'?'Báo giá':'Đang chạy'}</span></td>
+      <td class="r mono">${f(c.netRev)}</td>
+      <td class="r mono ${c.gm*100>=n(S.settings.targetGM)?'pos':'neg'}">${pc(c.gm)}</td>
+      <td class="r mono ${c.net>=0?'pos':'neg'}">${f(c.net)}</td>
+      <td class="r mono hold">${f(c.locked)}</td></tr>`}).join('')}
+  </tbody></table></div>`;
+}
+
+/* ---------- DANH SÁCH ---------- */
+function viewList(){
+  return `<div class="page-head"><div class="spread">
+    <div><div class="page-title">Dự án</div>
+    <div class="page-desc">Mỗi dự án là một bài toán tài chính riêng. Bấm vào để xem chi tiết.</div></div>
+    <div class="row"><button class="btn btn-sm" onclick="exportXLSX()">Xuất Excel</button>
+    <button class="btn btn-sm" onclick="exportJSON()">Sao lưu JSON</button>
+    <button class="btn btn-sm" onclick="importJSON()">Nhập file</button>
+    <button class="btn btn-sm" onclick="aiCopy()">🤖 Báo cáo cho AI</button>
+    <button class="btn btn-primary" onclick="newProject()">+ Dự án mới</button></div>
+  </div></div>
+  <div class="card">${tableProjects(S.projects)}</div>`;
+}
+
+/* ---------- CHI TIẾT DỰ ÁN ---------- */
+function viewProject(){
+  const p=S.projects.find(x=>x.id===openId);
+  if(!p){openId=null;return viewList()}
+  return `<button class="back" onclick="openId=null;render()">← Tất cả dự án</button>
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Thông tin dự án</div>
+        <div class="grid g2">
+          ${inp('Tên dự án','text','name',p.name)}
+          ${inp('Khách hàng','text','client',p.client)}
+        </div>
+        <div class="grid g3">
+          <label class="f"><div class="f-label">Trạng thái</div>
+            <select data-p="status">
+              <option value="quote"${p.status==='quote'?' selected':''}>Báo giá</option>
+              <option value="running"${p.status==='running'?' selected':''}>Đang chạy</option>
+              <option value="done"${p.status==='done'?' selected':''}>Đã xong</option>
+            </select></label>
+          <label class="f"><div class="f-label">Số ngày công dồn cho dự án <span class="hint" data-tip="Tổng số ngày bạn và ê-kíp thật sự dành cho dự án, tính cả tiền kỳ, quay và hậu kỳ. Dùng để phân bổ chi phí cố định.">i</span></div>
+            <input type="number" min="0" step="0.5" data-p="days" value="${n(p.days)}"></label>
+          <label class="f"><div class="f-label">Ngày nghiệm thu</div>
+            <input type="date" data-p="date" value="${esc(p.date||'')}"></label>
+        </div>
+        <div class="grid g2">
+          ${money('Tổng giá trị hợp đồng','contract',p.contract)}
+          <label class="f"><div class="f-label">Cách hiểu con số trên</div>
+            <select data-p="vatIncluded">
+              <option value="1"${p.vatIncluded?' selected':''}>Đã bao gồm VAT ${S.settings.vat}%</option>
+              <option value="0"${!p.vatIncluded?' selected':''}>Chưa bao gồm VAT</option>
+            </select></label>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="spread" style="margin-bottom:12px">
+          <div class="card-title" style="margin:0">Chi phí trực tiếp của dự án</div>
+          <span style="font-size:11px;color:var(--dim)">Tích “HĐ” nếu khoản chi có hoá đơn VAT</span>
+        </div>
+        <div class="costhead"><span>Khoản chi</span><span>Nhóm</span><span class="r">Dự trù</span><span class="r">Thực chi</span><span>Hoá đơn</span><span></span></div>
+        <div id="costs">${(p.costs||[]).map(costRow).join('')}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addCost()">+ Thêm dòng chi phí</button>
+        <div class="quickadd">${QUICK.map(([nm,c])=>`<button onclick="addCost('${esc(nm)}','${c}')">${nm}</button>`).join('')}</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Lịch thanh toán của khách</div>
+        <div id="pays">${(p.payments||[]).map(payRow).join('')||'<p style="color:var(--muted);font-size:13px;margin-bottom:8px">Chưa có đợt thanh toán nào.</p>'}</div>
+        <div class="row" style="margin-top:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="addPay()">+ Thêm đợt thanh toán</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="autoPay()">Chia sẵn 30 / 40 / 30</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Ghi chú rút kinh nghiệm</div>
+        <textarea data-p="note" placeholder="Khoản nào phát sinh ngoài dự kiến? Lần sau báo giá cần cộng thêm gì?">${esc(p.note||'')}</textarea>
+      </div>
+
+      <div class="row">
+        <button class="btn btn-sm btn-danger" onclick="delProject('${p.id}')">Xoá dự án</button>
+        <button class="btn btn-sm" onclick="dupProject('${p.id}')">Nhân bản</button>
+        <button class="btn btn-sm btn-primary" onclick="exportXLSX('${p.id}')">Xuất Excel dự án này</button>
+      </div>
+    </div>
+
+    <div class="sticky-side" id="side">${sideP(p)}</div>
+  </div>`;
+}
+
+function costRow(c){
+  return `<div class="costrow" data-cid="${c.id}">
+    <input type="text" data-c="name" value="${esc(c.name)}" placeholder="Tên khoản chi">
+    <select data-c="cat">${CAT.map(x=>`<option${x===c.cat?' selected':''}>${x}</option>`).join('')}</select>
+    <input class="money" type="text" data-c="planned" value="${c.planned?f(c.planned):''}" placeholder="0">
+    <input class="money" type="text" data-c="actual" value="${c.actual!==''&&c.actual!=null?f(c.actual):''}" placeholder="—">
+    <label class="tog"><input type="checkbox" data-c="inv"${c.inv?' checked':''}><span class="tog-box">✓</span>HĐ</label>
+    <button class="icon-btn" onclick="delCost('${c.id}')" aria-label="Xoá">×</button>
+  </div>`;
+}
+function payRow(x){
+  return `<div class="costrow" style="grid-template-columns:1fr 132px 116px 96px 32px" data-yid="${x.id}">
+    <input type="text" data-y="label" value="${esc(x.label)}" placeholder="Đợt thanh toán">
+    <input class="money" type="text" data-y="amount" value="${x.amount?f(x.amount):''}" placeholder="0">
+    <input type="date" data-y="date" value="${esc(x.date||'')}">
+    <label class="tog"><input type="checkbox" data-y="got"${x.got?' checked':''}><span class="tog-box">✓</span>Đã về</label>
+    <button class="icon-btn" onclick="delPay('${x.id}')" aria-label="Xoá">×</button>
+  </div>`;
+}
+function inp(label,type,k,v){return `<label class="f"><div class="f-label">${label}</div><input type="${type}" data-p="${k}" value="${esc(v||'')}"></label>`}
+function money(label,k,v,tip){return `<label class="f"><div class="f-label">${label} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div><input class="money" type="text" data-p="${k}" value="${v?f(v):''}" placeholder="0"><div style="font-size:11px;color:var(--dim);margin-top:4px" data-echo="${k}">${v?fs(v)+' ₫':''}</div></label>`}
+
+/* ---------- BẢNG KẾT QUẢ (cột phải) ---------- */
+function sideP(p){
+  const c=calc(p);
+  const segs=[
+    ['VAT thu hộ',c.vatOut,'var(--amber)'],
+    ['Chi phí trực tiếp',c.dNet,'var(--clay)'],
+    ['Chi phí cố định',Math.max(0,c.oh),'var(--plum)'],
+    ['Thuế TNDN',c.citAmt,'#C2843C'],
+    ['Lợi nhuận ròng',Math.max(0,c.net),'var(--teal)']
+  ];
+  const tot=segs.reduce((a,b)=>a+b[1],0)||1;
+  return `
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Tiền đi đâu</div>
+    <div class="wf">${segs.map(([nm,v,col])=>{
+      const w=v/tot*100;return `<div class="wf-seg" style="width:${w}%;background:${col}" title="${nm}: ${f(v)} ₫">${w>11?pc(v/tot):''}</div>`}).join('')}
+    </div>
+    <div class="wf-legend">${segs.map(([nm,v,col])=>
+      `<div class="wf-item" style="width:100%"><span class="wf-key" style="background:${col}"></span>${nm}<span class="wf-amt">${f(v)} ₫</span></div>`).join('')}</div>
+    ${c.net<0?`<div class="alert alert-red" style="margin-top:12px"><div class="alert-icon" style="color:var(--red)">×</div><div><b>Dự án lỗ ${f(-c.net)} ₫</b><p>Doanh thu không đủ gánh chi phí cố định.</p></div></div>`:''}
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Bảng lãi lỗ</div>
+    <div class="ladder">
+      ${lad('Giá trị hợp đồng (gồm VAT)',c.billed,'','Số tiền khách chuyển khoản.')}
+      ${lad('− VAT đầu ra ('+S.settings.vat+'%)',-c.vatOut,'hold','Bạn chỉ thu hộ nhà nước. Không phải doanh thu.')}
+      ${lad('Doanh thu thuần',c.netRev,'','Net Revenue — doanh thu thật sự ghi nhận.')}
+      ${lad('− Chi phí trực tiếp',-c.dNet,'','COGS — chi phí chỉ phát sinh vì có dự án này: freelancer, thuê thiết bị, bối cảnh, đi lại.')}
+      ${lad('Lợi nhuận gộp',c.gp,c.gp>=0?'pos':'neg','Gross Profit. Biên gộp '+pc(c.gm)+'.')}
+      ${lad('− Chi phí cố định phân bổ',-c.oh,'','Overhead Allocation — phần văn phòng, điện nước, phần mềm, lương bạn mà dự án này phải gánh ('+n(p.days)+' ngày × '+f(ohPerDay())+' ₫).')}
+      ${lad('Lợi nhuận trước thuế',c.ebt,c.ebt>=0?'pos':'neg','EBT — Earnings Before Tax.')}
+      ${c.citFree
+        ? lad('− Thuế TNDN (đang được miễn)',0,'pos','Doanh nghiệp nhỏ và vừa được miễn thuế TNDN 3 năm kể từ ngày cấp GCN đăng ký doanh nghiệp lần đầu (Nghị quyết 198/2025/QH15). Nếu không được miễn, khoản này sẽ là '+f(Math.max(0,c.taxable*n(S.settings.cit)/100))+' ₫.')
+        : lad('− Thuế TNDN ('+S.settings.cit+'%)',-c.citAmt,'hold','Tính trên lợi nhuận chịu thuế '+f(c.taxable)+' ₫ — chỉ chi phí có chứng từ hợp lệ mới được trừ.')}
+      <div class="ladder-row total"><span class="ladder-name">Lợi nhuận ròng</span><span class="ladder-val ${c.net>=0?'pos':'neg'}">${f(c.net)} ₫</span></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-title">Chỉ số</div>
+    <div class="grid g2" style="gap:10px">
+      ${mini('Biên gộp',pc(c.gm),c.gm*100>=n(S.settings.targetGM)?'pos':'neg','Gross Margin — chuẩn ngành sản xuất TVC 35–55%.')}
+      ${mini('Biên ròng',pc(c.nm),c.nm>=0?'pos':'neg','Net Margin — mục tiêu lành mạnh 15–25%.')}
+      ${mini('ROI',pc(c.roi),c.roi>=0?'pos':'neg','Return on Investment = Lợi nhuận ròng / Tổng vốn bỏ ra. Cho biết mỗi đồng bỏ ra thu về bao nhiêu.')}
+      ${mini('Markup',pc(c.markup),'','Tỷ lệ đội giá trên chi phí. Markup 100% mới bằng biên gộp 50% — đây là chỗ hay tính nhầm.')}
+      ${mini('Vượt ngân sách',c.planned?pc(c.overrun):'—',c.overrun>0?'neg':'pos','Chênh lệch giữa chi thực tế và dự trù ban đầu. Trên 10% là báo động.')}
+      ${mini('Chi không hoá đơn',pc(c.noInvRatio),c.noInvRatio>0.4?'neg':'','Tỷ lệ chi phí không có chứng từ. Càng cao thì thuế TNDN càng nặng.')}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Dòng tiền</div>
+    <div class="ladder">
+      ${lad('Khách đã thanh toán',c.collected,'pos')}
+      ${lad('Còn phải thu',c.receivable,c.receivable>0?'hold':'','Accounts Receivable — tiền chưa về tài khoản.')}
+      ${lad('Đã chi cho sản xuất',-c.dGross,'')}
+      ${lad('VAT phải nộp',-Math.max(0,c.vatPay),'hold','VAT đầu ra trừ VAT đầu vào được khấu trừ.')}
+      ${lad('Thuế TNDN để dành',-c.citAmt,'hold')}
+      ${lad('TNCN khấu trừ freelancer',-c.pitHold,'hold','Ước tính '+S.settings.pit+'% trên mọi khoản chi không hoá đơn đạt từ '+f(S.settings.pitThreshold)+' ₫/lần. Nếu khoản đó trả cho cá nhân thì bạn phải khấu trừ và nộp thay họ.')}
+      <div class="ladder-row total"><span class="ladder-name">Tiền được phép tiêu</span><span class="ladder-val ${c.cash>=0?'pos':'neg'}">${f(c.cash)} ₫</span></div>
+    </div>
+  </div>`;
+}
+function lad(name,v,cls,tip){
+  return `<div class="ladder-row"><span class="ladder-name">${name}${tip?` <span class="hint" data-tip="${esc(tip)}">i</span>`:''}</span>
+  <span class="ladder-val ${cls||''}">${f(v)} ₫</span></div>`;
+}
+function mini(l,v,cls,tip){
+  return `<div style="background:var(--void);border:1px solid var(--line-soft);border-radius:8px;padding:9px 11px">
+    <div style="font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px">${l} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div>
+    <div class="mono ${cls||''}" style="font-size:16px;font-weight:700;margin-top:3px">${v}</div></div>`;
+}
+
+
+/* ---------- CHIA HŨ TIỀN ---------- */
+function viewJars(){
+  const st=S.settings, amt=n(jar.amount);
+  const p=S.projects.find(x=>x.id===jar.project);
+  const suggestOps=n(st.avgRevenue)>0? ohMonthly()/n(st.avgRevenue)*100 : 0;
+  let rows=[], warn='';
+
+  if(p){
+    const c=calc(p), B=c.billed||1, r=amt/B;
+    const tax=(Math.max(0,c.vatPay)+c.citAmt+c.pitHold)*r;
+    const prod=c.dGross*r, ops=Math.max(0,c.oh)*r;
+    let left=amt-tax-prod-ops;
+    const res=Math.max(0,Math.min(left,amt*n(st.reservePct)/100));
+    const own=left-res;
+    rows=[
+      ['Hũ Thuế','var(--amber)',tax,'VAT + TNDN + TNCN khấu trừ của riêng dự án này. Chuyển sang tài khoản thuế ngay hôm tiền về.'],
+      ['Hũ Sản xuất','var(--clay)',prod,'Tiền trả freelancer, thuê thiết bị, bối cảnh. Đã có chủ, đừng coi là tiền mình.'],
+      ['Hũ Vận hành','var(--plum)',ops,'Phần dự án này gánh cho văn phòng, kế toán, phần mềm, khấu hao máy.'],
+      ['Hũ Dự trữ','#5FA8D3',res,'Quỹ khẩn cấp. Chỉ đụng khi mất job hoặc hỏng thiết bị.'],
+      ['Hũ Của anh','var(--teal)',own,'Lương và lợi nhuận. Đây mới là tiền tiêu được.']
+    ];
+    if(own<0) warn='Dự án này không đủ tiền chia. Sau khi để dành thuế, trả sản xuất và gánh vận hành, còn thiếu '+f(-own)+' ₫. Nghĩa là anh đang bù lỗ bằng tiền dự án khác.';
+  } else {
+    const t=amt*n(st.jarTax)/100, o=amt*n(st.jarOps)/100, r2=amt*n(st.jarReserve)/100;
+    rows=[
+      ['Hũ Thuế','var(--amber)',t,'VAT '+st.vat+'% cộng phần dự phòng thuế TNDN.'],
+      ['Hũ Vận hành','var(--plum)',o,'Nuôi bộ máy: văn phòng, kế toán, phần mềm, khấu hao.'],
+      ['Hũ Dự trữ','#5FA8D3',r2,'Quỹ khẩn cấp.'],
+      ['Hũ Sản xuất + Của anh','var(--teal)',amt-t-o-r2,'Phần còn lại để trả ê-kíp và trả lương chính mình.']
+    ];
+  }
+
+  const target=ohMonthly()*n(st.reserveMonths);
+  const have=n(st.reserveBalance);
+  const pctR=target>0? Math.min(100,have/target*100) : 0;
+
+  return `<div class="page-head"><div class="page-title">Chia hũ tiền</div>
+  <div class="page-desc">Mỗi lần khách chuyển khoản, chia ngay trước khi tiêu bất cứ đồng nào. Tiền không chia là tiền sẽ bị tiêu nhầm.</div></div>
+
+  <div class="split">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Vừa nhận được tiền</div>
+        <div class="grid g2">
+          <label class="f"><div class="f-label">Số tiền khách vừa chuyển</div>
+            <input class="money" type="text" data-j="amount" value="${jar.amount?f(jar.amount):''}" placeholder="0"></label>
+          <label class="f"><div class="f-label">Của dự án nào <span class="hint" data-tip="Chọn dự án để chia theo số liệu thật của dự án đó. Để trống thì chia theo tỷ lệ chung.">i</span></div>
+            <select data-j="project"><option value="">— Chia theo tỷ lệ chung —</option>
+            ${S.projects.map(x=>`<option value="${x.id}"${x.id===jar.project?' selected':''}>${esc(x.name||'Chưa đặt tên')}</option>`).join('')}</select></label>
+        </div>
+        ${amt>0?`<div class="ladder" style="margin-top:4px">
+          ${rows.map(([nm,col,v,tip])=>`<div class="ladder-row">
+            <span class="ladder-name"><span class="wf-key" style="background:${col}"></span>${nm} <span class="hint" data-tip="${esc(tip)}">i</span></span>
+            <span class="ladder-val" style="color:${v<0?'var(--red)':col}">${f(v)} ₫ <span style="color:var(--dim);font-size:11px">${pc(v/amt)}</span></span></div>`).join('')}
+        </div>
+        ${warn?`<div class="alert alert-red" style="margin-top:12px"><div class="alert-icon" style="color:var(--red)">×</div><div><b>Không đủ chia</b><p>${warn}</p></div></div>`:''}
+        `:'<p style="color:var(--muted);font-size:13px">Nhập số tiền để xem cách chia.</p>'}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Tỷ lệ chung khi không gắn dự án</div>
+        <div class="grid g3">
+          ${snum('Hũ Thuế (%)','jarTax',st.jarTax, st.citExempt
+            ? 'Đang miễn thuế TNDN nên hũ này chỉ cần đủ VAT: khoảng '+(st.vat/(1+st.vat/100)).toFixed(1)+'% trên tổng tiền về. Nhưng nên để dư vài phần trăm để quen tay trước khi hết ưu đãi.'
+            : 'Gợi ý: VAT '+st.vat+'% trên tổng tiền về, cộng thêm 4–6% dự phòng thuế TNDN.')}
+          ${snum('Hũ Vận hành (%)','jarOps',st.jarOps,'Gợi ý theo số liệu của anh: '+suggestOps.toFixed(0)+'% (chi phí cố định tháng chia doanh thu trung bình tháng).')}
+          ${snum('Hũ Dự trữ (%)','jarReserve',st.jarReserve,'5–10% là mức hợp lý cho studio nhỏ.')}
+        </div>
+        ${smoney('Doanh thu trung bình / tháng','avgRevenue',st.avgRevenue,'Dùng để gợi ý tỷ lệ hũ Vận hành. Lấy tổng doanh thu 6–12 tháng gần nhất chia đều.')}
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Quỹ dự trữ</div>
+        <div class="kpi-val ${pctR>=100?'pos':'hold'}" style="font-size:26px">${f(have)} ₫</div>
+        <div class="kpi-sub" style="margin-bottom:12px">Mục tiêu ${st.reserveMonths} tháng chi phí cố định = ${f(target)} ₫</div>
+        <div class="bar-track" style="height:9px"><div class="bar-fill" style="width:${pctR}%;background:${pctR>=100?'var(--teal)':'#5FA8D3'}"></div></div>
+        <div style="font-size:11px;color:var(--dim);margin-top:6px">${pctR.toFixed(0)}% mục tiêu — còn thiếu ${f(Math.max(0,target-have))} ₫</div>
+        <div class="grid g2" style="margin-top:14px">
+          ${smoney('Số dư quỹ hiện tại','reserveBalance',st.reserveBalance)}
+          ${snum('Mục tiêu (số tháng)','reserveMonths',st.reserveMonths,'3 tháng là mức tối thiểu. 6 tháng thì anh có thể từ chối job giá rẻ mà không sợ.')}
+        </div>
+        ${snum('% trích quỹ dự trữ mỗi lần thu','reservePct',st.reservePct)}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Bốn tài khoản nên mở</div>
+        <div class="ladder">
+          <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--amber)"></span>Tài khoản THUẾ</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">không dùng thẻ</span></div>
+          <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--clay)"></span>Tài khoản SẢN XUẤT</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">trả ê-kíp</span></div>
+          <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:#5FA8D3"></span>Tài khoản DỰ TRỮ</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">sổ tiết kiệm</span></div>
+          <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--teal)"></span>Tài khoản VẬN HÀNH + LƯƠNG</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">chi tiêu hằng ngày</span></div>
+        </div>
+        <p style="color:var(--muted);font-size:12.5px;margin-top:12px">Tài khoản Thuế và Dự trữ nên ở một ngân hàng khác, không cài app trên điện thoại, không gắn thẻ. Ma sát càng lớn thì càng khó tiêu nhầm.</p>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- TÍNH GIÁ CHÀO ---------- */
+function viewQuote(){
+  const gmT=n(quote.gm)/100;
+  const oh=ohPerDay()*n(quote.days);
+  const cost=n(quote.cost);
+  const revFloor=cost+oh;                        // hoà vốn: đủ trả chi phí trực tiếp + bộ máy
+  const revForGM=gmT<1? cost/(1-gmT) : 0;        // giá đạt biên gộp mong muốn
+  const withVat=revForGM*(1+n(S.settings.vat)/100);
+  const ebt=revForGM-cost-oh;
+  const netProfit=ebt>0? ebt*(1-n(S.settings.cit)/100) : ebt;
+  const belowFloor=revForGM<revFloor;
+  return `<div class="page-head"><div class="page-title">Tính giá chào</div>
+  <div class="page-desc">Đi ngược từ chi phí ra giá bán, thay vì đoán giá rồi mới xem còn lại bao nhiêu.</div></div>
+  <div class="split">
+    <div class="card">
+      <div class="card-title">Nhập dự kiến</div>
+      ${qmoney('Tổng chi phí trực tiếp dự kiến','cost',quote.cost,'Cộng hết freelancer, thiết bị, bối cảnh, đi lại, hậu kỳ. Nên cộng thêm 10% dự phòng.')}
+      <label class="f"><div class="f-label">Số ngày công dồn cho dự án</div>
+        <input type="number" min="0" step="0.5" data-q="days" value="${quote.days}"></label>
+      <label class="f"><div class="f-label">Biên lợi nhuận gộp mong muốn: <b class="mono" style="color:var(--teal)">${quote.gm}%</b></div>
+        <input type="range" min="10" max="75" step="1" data-q="gm" value="${quote.gm}" style="width:100%;padding:0;background:none;border:none">
+        <div style="font-size:11px;color:var(--dim);margin-top:4px">Sản xuất TVC ở Việt Nam thường 35–55%. Dưới 30% gần như không đủ nuôi bộ máy.</div></label>
+    </div>
+    <div class="stack">
+      <div class="kpi teal">
+        <div class="kpi-label">Giá chào chưa VAT</div>
+        <div class="kpi-val pos">${f(revForGM)} ₫</div>
+        <div class="kpi-sub">Ghi trên hợp đồng: <b class="mono">${f(withVat)} ₫</b> (đã gồm VAT ${S.settings.vat}%)</div>
+      </div>
+      <div class="card">
+        <div class="ladder">
+          ${lad('Giá sàn tuyệt đối (hoà vốn)',revFloor,'hold','Dưới mức này bạn làm không công và vẫn lỗ chi phí cố định.')}
+          ${lad('Chi phí cố định dự án gánh',oh,'','Đã gồm phần lương của chính bạn.')}
+          ${lad('Lợi nhuận trước thuế',ebt,ebt>=0?'pos':'neg')}
+          ${lad('Thuế TNDN ước tính',ebt>0?-ebt*n(S.settings.cit)/100:0,'hold')}
+          <div class="ladder-row total"><span class="ladder-name">Còn thật trong túi</span><span class="ladder-val ${netProfit>=0?'pos':'neg'}">${f(netProfit)} ₫</span></div>
+        </div>
+      </div>
+      ${belowFloor?`<div class="alert alert-red"><div class="alert-icon" style="color:var(--red)">×</div>
+      <div><b>Giá này chưa gánh nổi bộ máy</b><p>Với ${quote.days} ngày công, giá tối thiểu phải là ${f(revFloor)} ₫ chưa VAT. Hãy nâng biên gộp mục tiêu hoặc rút ngắn số ngày.</p></div></div>`:
+      `<div class="alert alert-teal"><div class="alert-icon" style="color:var(--teal)">✓</div>
+      <div><b>Quy tắc nhanh khi khách ép giá</b><p>Giảm 10% giá bán ở biên gộp 40% sẽ ăn mất 25% lợi nhuận gộp. Thà tăng khối lượng công việc còn hơn hạ đơn giá.</p></div></div>`}
+    </div>
+  </div>`;
+}
+function qmoney(label,k,v,tip){return `<label class="f"><div class="f-label">${label} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div><input class="money" type="text" data-q="${k}" value="${v?f(v):''}" placeholder="0"></label>`}
+
+/* ---------- CẤU HÌNH ---------- */
+function viewSettings(){
+  const s=S.settings;
+  return `<div class="page-head"><div class="page-title">Chi phí cố định &amp; thuế suất</div>
+  <div class="page-desc">Đây là bộ máy bạn phải nuôi kể cả khi không có dự án nào. Khai đúng ở đây thì mọi con số phía sau mới thật.</div></div>
+  <div class="split">
+    <div class="card">
+      <div class="card-title">Chi phí cố định hàng tháng</div>
+      <div class="costhead" style="grid-template-columns:1fr 150px 96px 32px"><span>Khoản mục</span><span class="r">Số tiền / tháng</span><span>Hoá đơn</span><span></span></div>
+      <div id="ohs">${s.overhead.map(o=>`<div class="costrow" style="grid-template-columns:1fr 150px 96px 32px" data-oid="${o.id}">
+        <input type="text" data-o="name" value="${esc(o.name)}">
+        <input class="money" type="text" data-o="amount" value="${o.amount?f(o.amount):''}" placeholder="0">
+        <label class="tog"><input type="checkbox" data-o="inv"${o.inv?' checked':''}><span class="tog-box">✓</span>HĐ</label>
+        <button class="icon-btn" onclick="delOH('${o.id}')">×</button></div>`).join('')}</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addOH()">+ Thêm khoản cố định</button>
+
+      <div style="margin-top:20px">
+        ${smoney('Lương của bạn / tháng','ownerSalary',s.ownerSalary,'Bạn là công ty một người, nhưng công sức của bạn không miễn phí. Đặt bằng mức bạn sẽ phải trả nếu thuê người khác làm thay. Không tính khoản này là lý do dự án nào cũng "có lãi" mà tài khoản vẫn cạn.')}
+      </div>
+      <div class="ladder" style="margin-top:6px">
+        <div class="ladder-row total"><span class="ladder-name">Tổng phải gánh mỗi tháng</span><span class="ladder-val hold" id="ohTotal">${f(ohMonthly())} ₫</span></div>
+        <div class="ladder-row"><span class="ladder-name">Quy ra mỗi ngày công</span><span class="ladder-val" id="ohDay">${f(ohPerDay())} ₫</span></div>
+      </div>
+    </div>
+
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Cách phân bổ chi phí cố định</div>
+        <label class="f"><div class="f-label">Phương pháp <span class="hint" data-tip="Theo ngày công phản ánh đúng hơn cho ngành sản xuất: dự án chiếm nhiều ngày thì gánh nhiều chi phí. Theo % doanh thu đơn giản hơn nhưng dễ méo với dự án dài mà giá thấp.">i</span></div>
+          <select data-s="allocMethod">
+            <option value="days"${s.allocMethod==='days'?' selected':''}>Theo số ngày công (khuyên dùng)</option>
+            <option value="percent"${s.allocMethod==='percent'?' selected':''}>Theo % doanh thu thuần</option>
+          </select></label>
+        <div class="grid g2">
+          ${snum('Số ngày làm việc / tháng','workDays',s.workDays)}
+          ${snum('% doanh thu phân bổ','overheadPct',s.overheadPct)}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Thuế suất &amp; mục tiêu</div>
+        <div class="grid g2">
+          ${snum('VAT (%)','vat',s.vat,'Thuế giá trị gia tăng đầu ra. Dịch vụ sản xuất thường 10%, có giai đoạn được giảm còn 8% theo nghị quyết. Kiểm tra chính sách đang áp dụng rồi điền.')}
+          ${snum('Thuế TNDN (%)','cit',s.cit,'Thuế thu nhập doanh nghiệp, mức phổ thông 20% trên lợi nhuận chịu thuế. Doanh nghiệp nhỏ có thể thuộc diện ưu đãi — hỏi kế toán thuế.')}
+          ${snum('TNCN khấu trừ freelancer (%)','pit',s.pit,'Trả cho cá nhân không ký hợp đồng lao động hoặc hợp đồng dưới 3 tháng thì phải khấu trừ 10% nộp thay, nếu khoản chi đạt ngưỡng bên cạnh.')}
+          ${smoney('Ngưỡng khấu trừ TNCN mỗi lần chi','pitThreshold',s.pitThreshold,'Từ 01/7/2026 ngưỡng này là 5.000.000đ/lần theo Nghị định 253/2026/NĐ-CP (trước đó là 2.000.000đ). Tính theo TỪNG LẦN CHI TRẢ, không phải tổng cả dự án.')}
+          ${snum('Biên gộp mục tiêu (%)','targetGM',s.targetGM,'Ngưỡng cảnh báo. Dự án dưới mức này sẽ hiện báo động ở trang Tổng quan.')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Ưu đãi thuế TNDN</div>
+        <label class="tog" style="margin-bottom:12px;font-size:13px"><input type="checkbox" data-s="citExempt"${s.citExempt?' checked':''}><span class="tog-box">✓</span>Đang được miễn thuế TNDN</label>
+        <label class="f"><div class="f-label">Miễn đến hết ngày <span class="hint" data-tip="Doanh nghiệp nhỏ và vừa được miễn thuế TNDN 3 năm kể từ ngày cấp Giấy chứng nhận đăng ký doanh nghiệp lần đầu (Nghị quyết 198/2025/QH15). Lấy ngày trên GCN cộng 3 năm rồi điền vào đây. Dự án có ngày nghiệm thu sau mốc này sẽ tự tính thuế 20% trở lại.">i</span></div>
+          <input type="date" data-s="citUntil" value="${esc(s.citUntil||'')}"></label>
+        <div class="alert alert-amber"><div class="alert-icon" style="color:var(--amber)">!</div>
+        <div><b>Miễn thuế không có nghĩa là hết nghĩa vụ</b><p>Vẫn phải kê khai và quyết toán TNDN hằng năm, VAT vẫn nộp bình thường. Hết 3 năm thì mức 20% quay lại — nên vẫn giữ thói quen trích quỹ ngay từ bây giờ.</p></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Đồng bộ điện thoại ↔ máy tính</div>
+        ${ghTok()?`
+        <p style="color:var(--muted);font-size:13px;margin-bottom:10px">Đang đồng bộ với kho riêng tư <b style="color:var(--text)">${GHD.owner}/${GHD.repo}</b> trên GitHub. Chỉ tài khoản GitHub của bạn xem được dữ liệu.</p>
+        <p id="ghstatus" style="font-size:12px;color:var(--dim);margin-bottom:12px">${ghLast?'Đồng bộ lần cuối: '+new Date(ghLast).toLocaleString('vi-VN'):'Đã kết nối'}</p>
+        <div class="row"><button class="btn btn-sm btn-primary" onclick="ghSync(false)">Đồng bộ ngay</button>
+        <button class="btn btn-sm" onclick="ghDisconnect()">Ngắt trên máy này</button></div>
+        `:`
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Dán token GitHub vào đây một lần, dữ liệu sẽ tự lưu vào kho riêng tư <b style="color:var(--text)">${GHD.owner}/${GHD.repo}</b> và tự đồng bộ giữa mọi thiết bị đã kết nối. <span class="hint" data-tip="Tạo token tại github.com → Settings → Developer settings → Fine-grained tokens. Chỉ cấp quyền Contents (Read and write) cho đúng repo ${GHD.repo}. Token chỉ lưu trên máy này, không gửi đi đâu ngoài GitHub.">i</span></p>
+        <label class="f"><div class="f-label">GitHub token</div><input type="password" id="ghtoken" placeholder="github_pat_…" autocomplete="off"></label>
+        <button class="btn btn-sm btn-primary" onclick="ghConnect()">Kết nối &amp; đồng bộ</button>
+        `}
+      </div>
+
+      <div class="card">
+        <div class="card-title">Sao lưu dữ liệu</div>
+        <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Dữ liệu lưu trong trình duyệt${ghTok()?' và đồng bộ qua GitHub':''}. Xuất file định kỳ để không mất.</p>
+        <div class="row"><button class="btn btn-sm btn-primary" onclick="exportXLSX()">Xuất Excel</button>
+        <button class="btn btn-sm" onclick="exportJSON()">Sao lưu JSON</button>
+        <button class="btn btn-sm" onclick="importJSON()">Nhập từ file</button>
+        <button class="btn btn-sm" onclick="aiCopy()">🤖 Báo cáo cho AI</button>
+        <button class="btn btn-sm btn-danger" onclick="wipe()">Xoá tất cả</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+function smoney(l,k,v,tip){return `<label class="f"><div class="f-label">${l} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div><input class="money" type="text" data-s="${k}" value="${v?f(v):''}"></label>`}
+function snum(l,k,v,tip){return `<label class="f"><div class="f-label">${l} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div><input type="number" step="0.5" data-s="${k}" value="${v}"></label>`}
+
+/* ---------- TỪ ĐIỂN ---------- */
+function viewDict(){
+  const D=[
+    ['Doanh thu thuần','Net Revenue','Tổng tiền hợp đồng sau khi bóc VAT ra. VAT là tiền bạn thu hộ nhà nước, ghi nhận nó thành doanh thu là tự lừa mình.','Hợp đồng ÷ (1 + VAT%)'],
+    ['Chi phí trực tiếp','COGS / Direct Cost','Chi phí chỉ phát sinh vì có dự án này: freelancer, thuê thiết bị, bối cảnh, đi lại, hậu kỳ. Không có dự án thì không tốn.','Cộng các khoản chi'],
+    ['Lợi nhuận gộp','Gross Profit','Phần còn lại sau khi trả xong chi phí sản xuất, dùng để nuôi bộ máy.','Doanh thu thuần − Chi phí trực tiếp'],
+    ['Biên lợi nhuận gộp','Gross Margin','Chỉ số quan trọng nhất khi báo giá. Sản xuất TVC ở Việt Nam thường 35–55%.','LN gộp ÷ Doanh thu thuần'],
+    ['Chi phí cố định','Overhead / Fixed Cost','Văn phòng, điện nước, phần mềm, khấu hao máy móc, lương bạn. Tốn đều mỗi tháng dù có dự án hay không. Đây chính là "chi phí ẩn" khiến dự án nhìn có lãi mà công ty vẫn hết tiền.','Cộng các khoản tháng'],
+    ['Phân bổ chi phí cố định','Overhead Allocation','Chia chi phí cố định cho từng dự án theo số ngày dự án chiếm dụng. Không phân bổ thì mọi báo giá đều thiếu.','Chi phí cố định/ngày × Số ngày dự án'],
+    ['Lợi nhuận trước thuế','EBT','Lãi thật của dự án sau khi đã gánh cả chi phí sản xuất lẫn bộ máy.','LN gộp − Chi phí cố định phân bổ'],
+    ['Lợi nhuận ròng','Net Profit','Tiền còn lại sau thuế TNDN. Đây mới là tiền của bạn.','EBT − Thuế TNDN'],
+    ['Biên lợi nhuận ròng','Net Margin','Mức lành mạnh cho studio nhỏ là 15–25%. Dưới 10% là mong manh.','LN ròng ÷ Doanh thu thuần'],
+    ['ROI','Return on Investment','Mỗi đồng vốn bỏ vào dự án mang về bao nhiêu đồng lãi. Dùng để so sánh giữa các dự án khác quy mô.','LN ròng ÷ (Chi phí trực tiếp + Chi phí cố định phân bổ)'],
+    ['Markup','Tỷ lệ đội giá','Rất hay bị nhầm với biên lợi nhuận. Markup 100% chỉ tương đương biên gộp 50%. Nếu bạn nghĩ "nhân đôi chi phí là lãi 100%" thì đó là chỗ sai.','LN gộp ÷ Chi phí trực tiếp'],
+    ['Điểm hoà vốn','Break-even Revenue','Doanh thu tối thiểu mỗi tháng để không lỗ. Dưới ngưỡng này thì dù dự án nào cũng "có lãi", cả năm vẫn âm.','Chi phí cố định tháng ÷ Biên gộp'],
+    ['VAT phải nộp','Output VAT − Input VAT','Tiền giữ hộ nhà nước. Nguyên nhân phổ biến nhất của việc "tất toán xong không thấy tiền" là đã tiêu vào khoản này.','VAT đầu ra − VAT đầu vào được khấu trừ'],
+    ['Chi phí được trừ','Deductible Expense','Chỉ khoản chi có hoá đơn, chứng từ hợp lệ mới được trừ khi tính thuế TNDN. Trả freelancer tiền mặt không giấy tờ nghĩa là bạn vẫn nộp thuế trên số tiền đã tiêu mất.','Cộng các khoản có hoá đơn'],
+    ['Công nợ phải thu','Accounts Receivable','Doanh thu đã ghi nhận nhưng tiền chưa về. Lãi trên giấy nằm ở đây.','Giá trị hợp đồng − Đã thu'],
+    ['Dòng tiền tự do','Free Cash Flow','Tiền thật sự tiêu được. Khác hoàn toàn với lợi nhuận.','Đã thu − Đã chi − Tiền giữ hộ']
+  ];
+  return `<div class="page-head"><div class="page-title">Từ điển chỉ số</div>
+  <div class="page-desc">Các chỉ số dùng trong công cụ này, kèm tên tiếng Anh chuẩn để bạn tra cứu hoặc trao đổi với kế toán.</div></div>
+  <div class="card"><dl class="dict">
+  ${D.map(([vi,en,d,ct])=>`<dt>${vi} <span class="chip">${en}</span></dt><dd>${d}<br><code>${ct}</code></dd>`).join('')}
+  </dl></div>`;
+}
+
+/* ============ HÀNH ĐỘNG ============ */
+function go(t){tab=t;openId=null;render()}
+function openP(id){openId=id;tab='projects';render()}
+function newProject(){
+  const p={id:u(),name:'Dự án mới',client:'',status:'running',days:5,date:'',contract:0,vatIncluded:true,
+    costs:[{id:u(),name:'',cat:'Nhân sự',planned:0,actual:'',inv:false}],payments:[],note:''};
+  S.projects.unshift(p);save();openP(p.id);
+}
+function dupProject(id){
+  const o=S.projects.find(x=>x.id===id);if(!o)return;
+  const c=JSON.parse(JSON.stringify(o));c.id=u();c.name=o.name+' (bản sao)';
+  c.costs.forEach(x=>x.id=u());c.payments.forEach(x=>x.id=u());
+  S.projects.unshift(c);save();openP(c.id);
+}
+function delProject(id){
+  if(!confirm('Xoá dự án này? Không khôi phục được.'))return;
+  S.projects=S.projects.filter(x=>x.id!==id);openId=null;save();render();toast('Đã xoá dự án');
+}
+function cur(){return S.projects.find(x=>x.id===openId)}
+function addCost(name,cat){
+  const p=cur();if(!p)return;
+  p.costs.push({id:u(),name:name||'',cat:cat||'Nhân sự',planned:0,actual:'',inv:false});
+  save();render();
+}
+function delCost(id){const p=cur();if(!p)return;p.costs=p.costs.filter(c=>c.id!==id);save();render()}
+function addPay(){const p=cur();if(!p)return;p.payments.push({id:u(),label:'Đợt '+(p.payments.length+1),amount:0,date:'',got:false});save();render()}
+function autoPay(){
+  const p=cur();if(!p)return;const c=calc(p);
+  p.payments=[
+    {id:u(),label:'Tạm ứng 30%',amount:Math.round(c.billed*.3),date:'',got:false},
+    {id:u(),label:'Sau khi quay 40%',amount:Math.round(c.billed*.4),date:'',got:false},
+    {id:u(),label:'Nghiệm thu 30%',amount:Math.round(c.billed*.3),date:'',got:false}];
+  save();render();
+}
+function delPay(id){const p=cur();if(!p)return;p.payments=p.payments.filter(x=>x.id!==id);save();render()}
+function addOH(){S.settings.overhead.push({id:u(),name:'',amount:0,inv:false});save();render()}
+function delOH(id){S.settings.overhead=S.settings.overhead.filter(o=>o.id!==id);save();render()}
+function wipe(){if(!confirm('Xoá toàn bộ dự án và cấu hình?'))return;S={settings:JSON.parse(JSON.stringify(DEF.settings)),projects:[]};save();go('dash');toast('Đã xoá toàn bộ dữ liệu')}
+
+/* ============ XUẤT EXCEL ============ */
+function loadXLSX(){
+  if(window.XLSX)return Promise.resolve();
+  return new Promise((res,rej)=>{
+    const sc=document.createElement('script');
+    sc.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    sc.onload=res; sc.onerror=rej; document.head.appendChild(sc);
+  });
+}
+function sheet(aoa,widths,pctCols){
+  const P=pctCols||[];
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const rg=XLSX.utils.decode_range(ws['!ref']);
+  for(let R=rg.s.r;R<=rg.e.r;R++)for(let C=rg.s.c;C<=rg.e.c;C++){
+    const c=ws[XLSX.utils.encode_cell({r:R,c:C})];
+    if(c&&typeof c.v==='number')c.z= P.indexOf(C)>=0? '0.0%' : '#,##0';
+  }
+  ws['!cols']=(widths||[]).map(w=>({wch:w}));
+  ws['!freeze']={xSplit:0,ySplit:1};
+  return ws;
+}
+async function exportXLSX(onlyId){
+  try{ await loadXLSX() }catch(e){ toast('Không tải được thư viện Excel. Hãy kiểm tra mạng.'); return }
+  const wb=XLSX.utils.book_new();
+  const ps = onlyId? S.projects.filter(x=>x.id===onlyId) : S.projects;
+  const s=S.settings;
+
+  /* 1. Tổng hợp */
+  const head=['Dự án','Khách hàng','Trạng thái','Ngày công','Giá trị hợp đồng','VAT đầu ra','Doanh thu thuần',
+    'Chi phí trực tiếp','Lợi nhuận gộp','Biên gộp','Chi phí cố định phân bổ','Lợi nhuận trước thuế',
+    'Thuế TNDN','Lợi nhuận ròng','Biên ròng','ROI','Đã thu','Còn phải thu','Cần giữ lại','Tiền được tiêu'];
+  const rows=ps.map(p=>{const c=calc(p);return [
+    p.name||'Chưa đặt tên', p.client||'', p.status==='done'?'Đã xong':p.status==='quote'?'Báo giá':'Đang chạy',
+    n(p.days), Math.round(c.billed), Math.round(c.vatOut), Math.round(c.netRev),
+    Math.round(c.dNet), Math.round(c.gp), +c.gm.toFixed(4), Math.round(c.oh), Math.round(c.ebt),
+    Math.round(c.citAmt), Math.round(c.net), +c.nm.toFixed(4), +c.roi.toFixed(4),
+    Math.round(c.collected), Math.round(c.receivable), Math.round(c.locked), Math.round(c.cash)]});
+  const tot=ps.reduce((a,p)=>{const c=calc(p);return{b:a.b+c.billed,v:a.v+c.vatOut,r:a.r+c.netRev,d:a.d+c.dNet,
+    g:a.g+c.gp,o:a.o+c.oh,e:a.e+c.ebt,t:a.t+c.citAmt,n:a.n+c.net,col:a.col+c.collected,rc:a.rc+c.receivable,
+    l:a.l+c.locked,ca:a.ca+c.cash}},{b:0,v:0,r:0,d:0,g:0,o:0,e:0,t:0,n:0,col:0,rc:0,l:0,ca:0});
+  rows.push(['TỔNG','','','',Math.round(tot.b),Math.round(tot.v),Math.round(tot.r),Math.round(tot.d),
+    Math.round(tot.g), tot.r?+(tot.g/tot.r).toFixed(4):0, Math.round(tot.o),Math.round(tot.e),
+    Math.round(tot.t),Math.round(tot.n), tot.r?+(tot.n/tot.r).toFixed(4):0,'',
+    Math.round(tot.col),Math.round(tot.rc),Math.round(tot.l),Math.round(tot.ca)]);
+  XLSX.utils.book_append_sheet(wb, sheet([head,...rows],[26,18,11,10,16,14,16,16,15,10,18,17,14,16,10,9,14,15,14,15],[9,14,15]),'Tổng hợp');
+
+  /* 2. Bảng lãi lỗ từng dự án */
+  ps.slice(0,12).forEach(p=>{
+    const c=calc(p);
+    const a=[['BẢNG LÃI LỖ — '+(p.name||'Chưa đặt tên'),''],['Khách hàng',p.client||''],['Số ngày công',n(p.days)],[''],
+      ['Khoản mục','Số tiền (₫)','Ghi chú'],
+      ['Giá trị hợp đồng (gồm VAT)',Math.round(c.billed),'Số tiền khách chuyển khoản'],
+      ['VAT đầu ra '+s.vat+'%',-Math.round(c.vatOut),'Thu hộ nhà nước, không phải doanh thu'],
+      ['DOANH THU THUẦN',Math.round(c.netRev),'Doanh thu thật của công ty'],
+      ['Chi phí trực tiếp',-Math.round(c.dNet),'Freelancer, thiết bị, bối cảnh, đi lại'],
+      ['LỢI NHUẬN GỘP',Math.round(c.gp),'Biên gộp '+pc(c.gm)],
+      ['Chi phí cố định phân bổ',-Math.round(c.oh),n(p.days)+' ngày × '+f(ohPerDay())+' ₫/ngày'],
+      ['LỢI NHUẬN TRƯỚC THUẾ',Math.round(c.ebt),''],
+      ['Thuế TNDN '+s.cit+'%',-Math.round(c.citAmt),'Trên lợi nhuận chịu thuế '+f(c.taxable)+' ₫'],
+      ['LỢI NHUẬN RÒNG',Math.round(c.net),'Biên ròng '+pc(c.nm)],
+      [''],['DÒNG TIỀN','',''],
+      ['Khách đã thanh toán',Math.round(c.collected),''],
+      ['Còn phải thu',Math.round(c.receivable),''],
+      ['Đã chi cho sản xuất',-Math.round(c.dGross),''],
+      ['VAT phải nộp',-Math.round(Math.max(0,c.vatPay)),''],
+      ['Thuế TNDN để dành',-Math.round(c.citAmt),''],
+      ['TNCN khấu trừ freelancer',-Math.round(c.pitHold),'Nộp thay cá nhân, '+s.pit+'%'],
+      ['TIỀN ĐƯỢC PHÉP TIÊU',Math.round(c.cash),''],
+      [''],['CHI PHÍ CHI TIẾT','','',''],
+      ['Khoản chi','Nhóm','Dự trù (₫)','Thực chi (₫)','Chênh lệch','Có hoá đơn'],
+      ...(p.costs||[]).map(x=>{const act=(x.actual===''||x.actual==null)?n(x.planned):n(x.actual);
+        return [x.name||'(chưa đặt tên)',x.cat,Math.round(n(x.planned)),Math.round(act),Math.round(act-n(x.planned)),x.inv?'Có':'Không']}),
+      [''],['LỊCH THANH TOÁN','','',''],
+      ['Đợt','Số tiền (₫)','Ngày hẹn','Đã nhận'],
+      ...(p.payments||[]).map(y=>[y.label,Math.round(n(y.amount)),y.date||'',y.got?'Rồi':'Chưa']),
+      [''],['Ghi chú',p.note||'']];
+    let nm=(p.name||'Du an').replace(/[\\\/\?\*\[\]:]/g,'').slice(0,26)||'Du an';
+    if(wb.SheetNames.indexOf(nm)>=0)nm=nm.slice(0,22)+' '+(wb.SheetNames.length);
+    XLSX.utils.book_append_sheet(wb, sheet(a,[34,16,40,16,14,12]), nm);
+  });
+
+  /* 3. Chi phí cố định */
+  const oh=[['Khoản mục','Số tiền / tháng (₫)','Có hoá đơn'],
+    ...s.overhead.map(o=>[o.name,Math.round(n(o.amount)),o.inv?'Có':'Không']),
+    ['Lương chủ (bạn)',Math.round(n(s.ownerSalary)),'Không'],
+    ['TỔNG MỖI THÁNG',Math.round(ohMonthly()),''],
+    ['Chi phí mỗi ngày công',Math.round(ohPerDay()),s.workDays+' ngày công/tháng'],
+    [''],['Doanh thu hoà vốn / tháng','','Chi phí cố định ÷ biên gộp bình quân'],
+    [''],['THUẾ SUẤT ĐANG ÁP DỤNG',''],['VAT (%)',n(s.vat)],['Thuế TNDN (%)',n(s.cit)],
+    ['TNCN khấu trừ freelancer (%)',n(s.pit)],['Biên gộp mục tiêu (%)',n(s.targetGM)],
+    [''],['TỶ LỆ CHIA HŨ TIỀN',''],['Hũ Thuế (%)',n(s.jarTax)],['Hũ Vận hành (%)',n(s.jarOps)],
+    ['Hũ Dự trữ (%)',n(s.jarReserve)],['Quỹ dự trữ hiện có (₫)',Math.round(n(s.reserveBalance))],
+    ['Mục tiêu quỹ dự trữ (₫)',Math.round(ohMonthly()*n(s.reserveMonths))]];
+  XLSX.utils.book_append_sheet(wb, sheet(oh,[38,22,34]),'Chi phí cố định');
+
+  const nm='deeplab-finance-'+(onlyId?(ps[0].name||'du-an').slice(0,20).replace(/\s+/g,'-'):'tat-ca')+'-'+new Date().toISOString().slice(0,10)+'.xlsx';
+  XLSX.writeFile(wb,nm);
+  toast('Đã xuất file Excel');
+}
+
+function exportJSON(){
+  const b=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='deeplab-finance-'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  toast('Đã tải file sao lưu');
+}
+function importJSON(){
+  const i=document.createElement('input');i.type='file';i.accept='.json';
+  i.onchange=e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();
+    r.onload=()=>{try{const d=JSON.parse(r.result);
+      S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[]};
+      save();render();toast('Đã nhập dữ liệu')}catch(err){toast('File không đọc được')}};
+    r.readAsText(fl)};
+  i.click();
+}
+
+/* ============ NHẬP LIỆU ============ */
+function digits(s){return String(s).replace(/[^\d]/g,'')}
+function fmtLive(el){
+  const raw=digits(el.value);
+  const before=el.value.slice(0,el.selectionStart).replace(/[^\d]/g,'').length;
+  el.value=raw?nf.format(parseInt(raw,10)):'';
+  let seen=0,pos=el.value.length;
+  for(let i=0;i<el.value.length;i++){if(/\d/.test(el.value[i]))seen++;if(seen===before){pos=i+1;break}}
+  if(before===0)pos=0;
+  try{el.setSelectionRange(pos,pos)}catch(e){}
+  return raw===''?'':parseInt(raw,10);
+}
+document.addEventListener('input',e=>{
+  const el=e.target;
+  const isMoney=el.classList.contains('money');
+  let val=isMoney?fmtLive(el):(el.type==='checkbox'?el.checked:el.value);
+  const p=cur();
+
+  if(el.dataset.p&&p){
+    const k=el.dataset.p;
+    p[k]= k==='contract'? (val===''?0:val)
+        : k==='vatIncluded'? el.value==='1'
+        : k==='days'? n(el.value) : el.value;
+    const echo=document.querySelector('[data-echo="'+k+'"]');
+    if(echo)echo.textContent=val?fs(val)+' ₫':'';
+    refresh();
+  }
+  else if(el.dataset.c&&p){
+    const id=el.closest('[data-cid]').dataset.cid;
+    const c=p.costs.find(x=>x.id===id);if(!c)return;
+    const k=el.dataset.c;
+    c[k]= k==='inv'? el.checked : (k==='planned'||k==='actual')? val : el.value;
+    refresh();
+  }
+  else if(el.dataset.y&&p){
+    const id=el.closest('[data-yid]').dataset.yid;
+    const y=p.payments.find(x=>x.id===id);if(!y)return;
+    const k=el.dataset.y;
+    y[k]= k==='got'? el.checked : k==='amount'? (val===''?0:val) : el.value;
+    refresh();
+  }
+  else if(el.dataset.o){
+    const id=el.closest('[data-oid]').dataset.oid;
+    const o=S.settings.overhead.find(x=>x.id===id);if(!o)return;
+    const k=el.dataset.o;
+    o[k]= k==='inv'? el.checked : k==='amount'? (val===''?0:val) : el.value;
+    refreshOH();
+  }
+  else if(el.dataset.s){
+    const k=el.dataset.s;
+    S.settings[k]= el.type==='checkbox'? el.checked
+                 : (k==='allocMethod'||k==='citUntil')? el.value
+                 : (isMoney? (val===''?0:val) : n(el.value));
+    refreshOH();
+  }
+  else if(el.dataset.j){
+    const k=el.dataset.j;
+    jar[k]= isMoney? (val===''?0:val) : el.value;
+    if(tab==='jars'&&k==='project')render(); else if(tab==='jars')renderJarSplit();
+    return save();
+  }
+  else if(el.dataset.q){
+    const k=el.dataset.q;
+    quote[k]= isMoney? (val===''?0:val) : n(el.value);
+    if(tab==='quote')render();
+    return save();
+  }
+  save();
+});
+function refresh(){
+  const p=cur();const side=document.getElementById('side');
+  if(p&&side)side.innerHTML=sideP(p);
+}
+function renderJarSplit(){ const m=document.getElementById('main'); const sc=m.scrollTop;
+  const a=document.activeElement, sel=a&&a.selectionStart, id=a&&a.dataset&&a.dataset.j;
+  m.innerHTML=viewJars(); m.scrollTop=sc;
+  if(id){const el=m.querySelector('[data-j="'+id+'"]'); if(el){el.focus();try{el.setSelectionRange(sel,sel)}catch(e){}}}
+}
+function refreshOH(){
+  const a=document.getElementById('ohTotal'),b=document.getElementById('ohDay');
+  if(a)a.textContent=f(ohMonthly())+' ₫';
+  if(b)b.textContent=f(ohPerDay())+' ₫';
+}
+document.addEventListener('change',e=>{
+  if(e.target.dataset.p==='status'||e.target.dataset.p==='vatIncluded'){save()}
+  if(e.target.dataset.s==='allocMethod'||e.target.dataset.o!==undefined){save();if(tab==='settings')render()}
+});
+document.querySelectorAll('.navbtn').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.addEventListener('click',e=>{
+  if(e.target.classList&&e.target.classList.contains('hint')){
+    document.querySelectorAll('.hint.open').forEach(h=>{if(h!==e.target)h.classList.remove('open')});
+    e.target.classList.toggle('open');
+  } else document.querySelectorAll('.hint.open').forEach(h=>h.classList.remove('open'));
+});
+
+/* ============ KHỞI ĐỘNG ============ */
+(async()=>{
+  await load();render();
+  if(ghTok()){ghSetState('idle');ghSync(false)}
+})();
+if('serviceWorker' in navigator && (location.protocol==='https:'||location.hostname==='localhost')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>

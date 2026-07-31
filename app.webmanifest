@@ -1,0 +1,13 @@
+{
+  "name": "Deeplab Finance",
+  "short_name": "Finance",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15171B",
+  "theme_color": "#15171B",
+  "icons": [
+    { "src": "finance-icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "finance-icon.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
