@@ -205,7 +205,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 .dict dd{color:var(--muted);font-size:13px;margin-top:3px}
 .dict code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--void);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;color:var(--teal)}
 
-.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;transition:.25s;opacity:0;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;transition:.25s;opacity:0;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none}
 .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
 
 @media(max-width:900px){
@@ -253,6 +253,9 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
   input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{font-size:13px;padding:7px 9px;border-radius:7px}
   .btn{padding:7px 11px;font-size:12.5px}
   .btn-sm{padding:6px 9px;font-size:12px}
+  /* page-head: nút xếp xuống dưới tiêu đề thay vì chen ngang */
+  .page-head .spread{flex-direction:column;align-items:flex-start;gap:10px}
+  .chip{white-space:nowrap}
   /* dòng chi phí / thanh toán: tên chiếm nguyên dòng (hết cắt chữ), nút × thu về góc */
   .costhead{display:none}
   .costrow{grid-template-columns:1fr 1fr!important;gap:6px;padding:8px 30px 8px 8px;border:1px solid var(--line-soft);border-radius:9px;margin-bottom:6px;position:relative}
@@ -286,7 +289,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.4</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.5</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
