@@ -206,6 +206,13 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 .dict dd{color:var(--muted);font-size:13px;margin-top:3px}
 .dict code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--void);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;color:var(--teal)}
 
+.alert-more{margin-bottom:10px}
+.alert-more summary{cursor:pointer;font-size:12px;color:var(--muted);padding:8px 12px;border:1px dashed var(--line);border-radius:9px;list-style:none;user-select:none;transition:.14s}
+.alert-more summary::-webkit-details-marker{display:none}
+.alert-more summary::before{content:'▸ '}
+.alert-more[open] summary::before{content:'▾ '}
+.alert-more summary:hover{color:var(--text);border-color:var(--muted)}
+.alert-more[open] summary{margin-bottom:8px}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel-2);border:1px solid var(--line);padding:10px 18px;border-radius:10px;transition:.25s;opacity:0;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.5);pointer-events:none}
 .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
 
@@ -291,7 +298,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.0</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.1</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -781,23 +788,36 @@ function kpi(label,tone,val,sub,tip){
 
 function alerts(list,t,gm){
   const A=[];
+  // gộp cảnh báo cùng loại của nhiều dự án thành một dòng
+  const loss=[],lowgm=[],overr=[],noinv=[];
+  list.forEach(({p,c})=>{
+    if(c.net<0)loss.push({n:p.name||'Chưa đặt tên',v:-c.net});
+    else if(c.gm*100<n(S.settings.targetGM))lowgm.push({n:p.name||'Chưa đặt tên',v:c.gm});
+    if(c.overrun>0.15)overr.push({n:p.name||'Chưa đặt tên',v:c.overrun,g:c.dGross,pl:c.planned});
+    if(c.noInvRatio>0.4&&c.dGross>0)noinv.push({n:p.name||'Chưa đặt tên',v:c.noInvRatio});
+  });
+  const names=a=>a.map(x=>'"'+esc(x.n)+'"').join(', ');
+  if(loss.length===1)A.push(['red','×','Dự án '+names(loss)+' đang lỗ '+f(loss[0].v)+' ₫','Sau khi gánh chi phí cố định và thuế, dự án này ăn vào tiền của công ty.']);
+  else if(loss.length>1)A.push(['red','×',loss.length+' dự án đang lỗ — tổng '+f(loss.reduce((s,x)=>s+x.v,0))+' ₫',names(loss)+'. Sau khi gánh chi phí cố định và thuế, các dự án này ăn vào tiền công ty.']);
+  if(overr.length===1)A.push(['red','×',names(overr)+' vượt ngân sách '+pc(overr[0].v),'Chi thực tế '+fs(overr[0].g)+' so với dự trù '+fs(overr[0].pl)+'. Đây là chỗ lợi nhuận bốc hơi.']);
+  else if(overr.length>1)A.push(['red','×',overr.length+' dự án vượt ngân sách trên 15%',names(overr)+'. Đây là chỗ lợi nhuận bốc hơi.']);
   if(t.locked>0)A.push(['amber','!','Bạn đang giữ hộ nhà nước '+f(t.locked)+' ₫',
     'Gồm VAT phải nộp và thuế TNDN. Hãy tách khoản này sang một tài khoản riêng ngay khi tiền về — đây là nguyên nhân số một khiến "tính thì lãi mà cuối kỳ hết tiền".']);
-  if(S.settings.citExempt)A.push(['teal','✓','Đang trong thời gian miễn thuế TNDN'+(S.settings.citUntil?' đến hết '+S.settings.citUntil:''),
-    'Ba năm này là cơ hội tích quỹ. Hết hạn, mức 20% quay lại — hãy vẫn trích đều vào hũ Dự trữ như thể đang phải nộp.']);
   if(t.pit>0)A.push(['amber','!','Thuế TNCN khấu trừ freelancer ước tính '+f(t.pit)+' ₫',
     'Áp dụng cho khoản chi từ '+f(S.settings.pitThreshold)+' ₫/lần trở lên cho cá nhân không ký hợp đồng lao động. Nếu bạn trả đủ 100% cho họ, phần này bạn phải móc túi bù.']);
-  list.forEach(({p,c})=>{
-    if(c.net<0)A.push(['red','×','Dự án "'+esc(p.name)+'" đang lỗ '+f(-c.net)+' ₫','Sau khi gánh chi phí cố định và thuế, dự án này ăn vào tiền của công ty.']);
-    else if(c.gm*100<n(S.settings.targetGM))A.push(['amber','!','"'+esc(p.name)+'" có biên gộp '+pc(c.gm)+', thấp hơn mục tiêu '+S.settings.targetGM+'%','Giá bán quá thấp hoặc chi phí sản xuất vượt dự kiến.']);
-    if(c.overrun>0.15)A.push(['red','×','"'+esc(p.name)+'" vượt ngân sách '+pc(c.overrun),'Chi thực tế '+fs(c.dGross)+' so với dự trù '+fs(c.planned)+'. Đây là chỗ lợi nhuận bốc hơi.']);
-    if(c.noInvRatio>0.4&&c.dGross>0)A.push(['amber','!','"'+esc(p.name)+'": '+pc(c.noInvRatio)+' chi phí không có hoá đơn','Phần này không được trừ khi tính thuế TNDN, nên bạn nộp thuế trên khoản tiền đã tiêu mất.']);
-  });
+  if(noinv.length===1)A.push(['amber','!',names(noinv)+': '+pc(noinv[0].v)+' chi phí không có hoá đơn','Phần này không được trừ khi tính thuế TNDN, nên bạn nộp thuế trên khoản tiền đã tiêu mất. Việc cần làm: hợp đồng dịch vụ + chứng từ khấu trừ TNCN cho freelancer.']);
+  else if(noinv.length>1)A.push(['amber','!','Chi phí không hoá đơn ở '+noinv.length+' dự án',names(noinv)+' — phần này không được trừ khi tính thuế TNDN. Việc cần làm: hợp đồng dịch vụ + chứng từ khấu trừ TNCN cho freelancer.']);
+  if(lowgm.length===1)A.push(['amber','!',names(lowgm)+' có biên gộp '+pc(lowgm[0].v)+', dưới mục tiêu '+S.settings.targetGM+'%','Giá bán quá thấp hoặc chi phí sản xuất vượt dự kiến.']);
+  else if(lowgm.length>1)A.push(['amber','!',lowgm.length+' dự án dưới biên gộp mục tiêu '+S.settings.targetGM+'%',names(lowgm)+'. Giá bán quá thấp hoặc chi phí sản xuất vượt dự kiến.']);
   if(t.recv>t.rev*0.4&&t.rev>0)A.push(['amber','!','Công nợ chiếm '+pc(t.recv/t.rev)+' doanh thu','Lợi nhuận đang nằm ở chỗ khách hàng chứ không phải trong tài khoản.']);
+  if(S.settings.citExempt)A.push(['teal','✓','Đang trong thời gian miễn thuế TNDN'+(S.settings.citUntil?' đến hết '+S.settings.citUntil:''),
+    'Ba năm này là cơ hội tích quỹ. Hết hạn, mức 20% quay lại — hãy vẫn trích đều vào hũ Dự trữ như thể đang phải nộp.']);
   if(!A.length)A.push(['teal','✓','Chưa phát hiện rủi ro tài chính nào','Các dự án đều đạt biên mục tiêu và không có khoản giữ hộ tồn đọng.']);
-  return `<div style="margin-bottom:2px">${A.slice(0,7).map(([k,i,ti,d])=>
-    `<div class="alert alert-${k}"><div class="alert-icon" style="color:var(--${k==='red'?'red':k==='amber'?'amber':'teal'})">${i}</div>
-     <div><b>${ti}</b><p>${d}</p></div></div>`).join('')}</div>`;
+  const box=([k,i,ti,d])=>`<div class="alert alert-${k}"><div class="alert-icon" style="color:var(--${k==='red'?'red':k==='amber'?'amber':'teal'})">${i}</div>
+     <div><b>${ti}</b><p>${d}</p></div></div>`;
+  const shown=A.slice(0,2), more=A.slice(2);
+  return `<div style="margin-bottom:2px">${shown.map(box).join('')}
+    ${more.length?`<details class="alert-more"><summary>Xem thêm ${more.length} cảnh báo</summary>${more.map(box).join('')}</details>`:''}</div>`;
 }
 
 function tableProjects(ps){
