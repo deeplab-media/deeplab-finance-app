@@ -291,7 +291,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.9</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.0</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -332,12 +332,13 @@ const DEF={
     ]
   },
   projects:[],
-  product:{infraMonthly:700000,licensePrice:349000,tools:[],revenue:[]}
+  product:{infraMonthly:700000,licensePrice:349000,tools:[],revenue:[],goal:{target:30000000,leadTrial:6,trialBuy:18,leadsNow:170}}
 };
 function normProduct(p){
   const b=JSON.parse(JSON.stringify(DEF.product));
   const o=Object.assign(b,p||{});
   o.tools=o.tools||[];o.revenue=o.revenue||[];
+  o.goal=Object.assign({target:30000000,leadTrial:6,trialBuy:18,leadsNow:170},o.goal||{});
   return o;
 }
 
@@ -628,7 +629,10 @@ function aiReport(){
     L.push('- Tổng vốn build: '+f(pc.invest)+' | Hạ tầng: '+f(pc.P.infraMonthly)+'/tháng × '+pc.months+' tháng = '+f(pc.infra));
     L.push('- Doanh thu thuần lũy kế: '+f(pc.revNet)+(pc.orders?' ('+pc.orders+' đơn)':''));
     L.push('- **Lời/lỗ lũy kế kênh: '+f(pc.pl)+'**'+(pc.pl<0?' — cần thêm ≈ '+pc.needLic+' license để hoà vốn':' — ĐÃ HOÀN VỐN'));
-    pc.P.revenue.filter(r=>r.month).sort((a,b)=>a.month<b.month?-1:1).forEach(r=>L.push('  - '+r.month+': '+f(r.amount)+(r.orders?' ('+r.orders+' đơn)':'')));
+    pc.P.revenue.filter(r=>r.month).sort((a,b)=>a.month<b.month?-1:1).forEach(r=>L.push('  - '+r.month+': thu '+f(r.amount)+(r.mkt?', chi MKT '+f(r.mkt):'')+(r.orders?' ('+r.orders+' đơn)':'')));
+    if(pc.mkt)L.push('- Tổng chi marketing: '+f(pc.mkt)+' → ROI marketing ×'+(pc.revNet/pc.mkt).toFixed(1));
+    const g=pc.P.goal;
+    if(g&&n(g.target))L.push('- Mục tiêu kênh: '+f(g.target)+'/tháng — cần '+Math.ceil(n(g.target)/n(pc.P.licensePrice))+' đơn/tháng (conversion hiện tại: leads→trial '+g.leadTrial+'%, trial→mua '+g.trialBuy+'%, leads thực tế '+g.leadsNow+'/tháng)');
   }
   const list=actives().map(p=>calc(p));
   const t=list.reduce((a,c)=>({rev:a.rev+c.netRev,gp:a.gp+c.gp,net:a.net+c.net,locked:a.locked+c.locked,recv:a.recv+c.receivable,cash:a.cash+c.cash}),{rev:0,gp:0,net:0,locked:0,recv:0,cash:0});
@@ -698,6 +702,12 @@ function viewDash(){
     ${kpi('Công nợ phải thu','clay',fs(t.recv),'Khách chưa thanh toán','Accounts Receivable. Đã ghi nhận doanh thu nhưng tiền chưa về. Lãi trên giấy nằm hết ở đây.')}
     ${kpi('Doanh thu hoà vốn / tháng','amber',fs(be),'Cần '+f(Math.ceil(be/Math.max(1,t.rev/Math.max(1,list.length))))+' dự án cỡ trung bình','Break-even Revenue = Chi phí cố định tháng / Biên lợi nhuận gộp. Dưới mức này là lỗ dù từng dự án nhìn có lãi.')}
   </div>
+
+  ${(()=>{const g={};list.forEach(({p,c})=>{const k=(p.client||'').trim().toLowerCase();if(!k)return;(g[k]=g[k]||[]).push(c.netRev)});
+    let rr=0,cl=0;Object.values(g).forEach(a=>{if(a.length>1){cl++;rr+=a.slice(1).reduce((x,y)=>x+y,0)}});
+    const pct2=t.rev>0?rr/t.rev:0;
+    return `<div class="card" style="margin-bottom:14px"><div class="card-title">Khách cũ quay lại <span class="hint" data-tip="Lần đầu khách mua vì marketing, từ lần 2 họ mua vì chất lượng — doanh thu đó không tốn một đồng quảng cáo. Chỉ số này càng cao, business càng bền.">i</span></div>
+    <div style="font-size:13px;color:var(--muted)">${cl?`<b class="mono" style="color:var(--teal)">${pc(pct2)}</b> doanh thu thuần đến từ dự án thứ 2 trở đi của khách cũ (${cl} khách quay lại).`:'Chưa có khách nào quay lại lần 2. Sau mỗi dự án nghiệm thu, một tin nhắn hỏi thăm sau 2–4 tuần rẻ hơn mọi quảng cáo — doanh thu bền nhất là khách cũ.'}</div></div>`})()}
 
   ${alerts(list,t,gm)}
   ${cashflowCard()}
@@ -1145,7 +1155,8 @@ function prodCalc(){
   const revGross=P.revenue.reduce((a,r)=>a+n(r.amount),0);
   const revNet=revGross/(1+v);
   const orders=P.revenue.reduce((a,r)=>a+n(r.orders),0);
-  const cost=invest+infra;
+  const mkt=P.revenue.reduce((a,r)=>a+n(r.mkt),0);
+  const cost=invest+infra+mkt;
   const pl=revNet-cost;
   const licNet=n(P.licensePrice)/(1+v);
   const needLic=pl<0&&licNet>0?Math.ceil(-pl/licNet):0;
@@ -1153,7 +1164,7 @@ function prodCalc(){
   const last=sorted[sorted.length-1]||null, prev=sorted[sorted.length-2]||null;
   const n3=Math.min(3,sorted.length);
   const avg3=n3?sorted.slice(-n3).reduce((a,r)=>a+n(r.amount),0)/n3:0;
-  return {P,rate,invest,infra,months,revGross,revNet,orders,cost,pl,licNet,needLic,last,prev,avg3};
+  return {P,rate,invest,infra,months,revGross,revNet,orders,mkt,cost,pl,licNet,needLic,last,prev,avg3};
 }
 function toolCost(t){return n(t.days)*ohPerDay()+n(t.extra)}
 function monthLabel(m){if(!m)return '(chưa chọn tháng)';const[y,mo]=m.split('-');return 'Tháng '+n(mo)+'/'+y}
@@ -1163,7 +1174,7 @@ function prodKpis(){
     <div class="kpi teal"><div class="kpi-label">Doanh thu thuần lũy kế <span class="hint" data-tip="Tổng tiền khách đã trả (đã bóc VAT ${S.settings.vat}%). Doanh thu kênh này cộng dồn cả bộ plugin — không chia theo từng tool vì một license mở khóa tất cả.">i</span></div>
       <div class="kpi-val">${f(c.revNet)} ₫</div><div class="kpi-sub">${c.orders?c.orders+' đơn · ':''}${f(c.revGross)} ₫ gồm VAT</div></div>
     <div class="kpi amber"><div class="kpi-label">Tổng vốn đã bỏ <span class="hint" data-tip="Công build các tool (ngày công × ${f(ohPerDay())} ₫) + hạ tầng ${f(c.P.infraMonthly)} ₫ × ${c.months} tháng vận hành.">i</span></div>
-      <div class="kpi-val">${f(c.cost)} ₫</div><div class="kpi-sub">Build ${f(c.invest)} + hạ tầng ${f(c.infra)}</div></div>
+      <div class="kpi-val">${f(c.cost)} ₫</div><div class="kpi-sub">Build ${f(c.invest)} + hạ tầng ${f(c.infra)}${c.mkt?' + MKT '+f(c.mkt):''}</div></div>
     <div class="kpi ${c.pl>=0?'teal':'red'}"><div class="kpi-label">Lời / lỗ lũy kế kênh</div>
       <div class="kpi-val ${c.pl>=0?'pos':'neg'}">${f(c.pl)} ₫</div>
       <div class="kpi-sub">${c.pl>=0?'Kênh đã hoàn vốn':'Cần thêm ≈ '+c.needLic+' license để hoà vốn'}</div></div>
@@ -1184,6 +1195,7 @@ function prodOut(){
       <div style="font-size:12px;color:var(--muted)">Đã thu hồi <b class="mono" style="color:var(--text)">${pct.toFixed(0)}%</b> của ${f(c.cost)} ₫ đã bỏ ra${c.pl<0?' — còn thiếu <b class="mono">'+f(-c.pl)+' ₫</b> ≈ <b class="mono">'+c.needLic+'</b> license '+f(c.P.licensePrice)+' ₫':''}.</div>
       <div class="ladder" style="margin-top:10px">
         <div class="ladder-row"><span class="ladder-name">Trung bình ${Math.min(3,c.months)||0} tháng gần nhất</span><span class="ladder-val">${f(c.avg3)} ₫/tháng</span></div>
+        ${c.mkt?`<div class="ladder-row"><span class="ladder-name">Chi MKT lũy kế → ROI marketing <span class="hint" data-tip="ROI = doanh thu thuần / tiền marketing đã chi. Dưới 1 nghĩa là quảng cáo đang đốt tiền; theo dõi theo tháng để biết kênh nào đáng dồn vốn.">i</span></span><span class="ladder-val ${c.revNet/c.mkt>=1?'pos':'neg'}">${f(c.mkt)} ₫ · ×${(c.revNet/c.mkt).toFixed(1)}</span></div>`:''}
         <div class="ladder-row"><span class="ladder-name">Hạ tầng mỗi tháng phải nuôi</span><span class="ladder-val hold">${f(c.P.infraMonthly)} ₫</span></div>
         <div class="ladder-row total"><span class="ladder-name">Kênh tự nuôi hạ tầng chưa?</span><span class="ladder-val ${c.avg3/(1+n(S.settings.vat)/100)>=c.P.infraMonthly?'pos':'neg'}">${c.avg3/(1+n(S.settings.vat)/100)>=c.P.infraMonthly?'Rồi':'Chưa'}</span></div>
       </div>
@@ -1215,13 +1227,14 @@ function viewProduct(){
       </div>
       <div class="card">
         <div class="card-title">Doanh thu theo tháng — cộng dồn cả kênh</div>
-        <div class="costhead" style="grid-template-columns:130px minmax(100px,1fr) 76px 28px"><span>Tháng</span><span class="r">Tiền về (gồm VAT)</span><span class="r">Số đơn</span><span></span></div>
-        <div id="prevs">${[...P.revenue].sort((a,b)=>(a.month||'')<(b.month||'')?1:-1).map(r=>`<div class="costrow" style="grid-template-columns:130px minmax(100px,1fr) 76px 28px" data-rid="${r.id}">
+        <div class="costhead" style="grid-template-columns:118px minmax(90px,1fr) minmax(84px,110px) 58px 28px"><span>Tháng</span><span class="r">Tiền về (VAT)</span><span class="r">Chi MKT</span><span class="r">Đơn</span><span></span></div>
+        <div id="prevs">${[...P.revenue].sort((a,b)=>(a.month||'')<(b.month||'')?1:-1).map(r=>`<div class="costrow" style="grid-template-columns:118px minmax(90px,1fr) minmax(84px,110px) 58px 28px" data-rid="${r.id}">
           <input type="month" data-r="month" value="${esc(r.month||'')}">
           <input class="money" type="text" data-r="amount" value="${r.amount?f(r.amount):''}" placeholder="0">
+          <input class="money" type="text" data-r="mkt" value="${r.mkt?f(r.mkt):''}" placeholder="MKT">
           <input type="number" min="0" data-r="orders" value="${r.orders||''}" placeholder="đơn">
           <button class="icon-btn" onclick="delRev('${r.id}')" aria-label="Xoá">×</button>
-        </div>`).join('')||'<div style="font-size:12px;color:var(--dim);padding:6px 0">Mỗi tháng một dòng. Tháng không có đơn vẫn thêm dòng với 0 ₫ — để app tính đúng chi phí hạ tầng đã nuôi.</div>'}</div>
+        </div>`).join('')||'<div style="font-size:12px;color:var(--dim);padding:6px 0">Mỗi tháng một dòng. Tháng không có đơn vẫn thêm dòng với 0 ₫ — để app tính đúng chi phí hạ tầng đã nuôi. Cột Chi MKT = tiền quảng cáo/booking đã chi cho kênh trong tháng đó.</div>'}</div>
         <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addRev()">+ Thêm tháng</button>
       </div>
     </div>
@@ -1233,9 +1246,41 @@ function viewProduct(){
         <label class="f"><div class="f-label">Giá 1 license (gồm VAT) <span class="hint" data-tip="Dùng để quy đổi 'còn thiếu bao nhiêu license thì hoà vốn'. Giá Pro hiện tại 349.000đ.">i</span></div>
         <input class="money" type="text" data-pc="licensePrice" value="${P.licensePrice?f(P.licensePrice):''}"></label>
       </div>
+      <div class="card">
+        <div class="card-title">Kế hoạch ngược — từ mục tiêu ra hành động <span class="hint" data-tip="Chủ brand không hỏi 'hôm nay bán được mấy đơn' mà tính ngược: muốn X doanh thu thì cần bao nhiêu đơn → bao nhiêu trial → bao nhiêu người phải nhìn thấy mình. Lấy % chuyển đổi từ admin dashboard của bạn (leads→trial và trial→Pro).">i</span></div>
+        <label class="f"><div class="f-label">Mục tiêu doanh thu kênh / tháng</div>
+        <input class="money" type="text" data-pg="target" value="${P.goal&&P.goal.target?f(P.goal.target):''}"></label>
+        <div class="grid g3">
+          <label class="f"><div class="f-label">Leads → Trial (%)</div><input type="number" min="0" step="0.5" data-pg="leadTrial" value="${P.goal?P.goal.leadTrial:6}"></label>
+          <label class="f"><div class="f-label">Trial → Mua (%)</div><input type="number" min="0" step="0.5" data-pg="trialBuy" value="${P.goal?P.goal.trialBuy:18}"></label>
+          <label class="f"><div class="f-label">Leads thực tế/tháng</div><input type="number" min="0" data-pg="leadsNow" value="${P.goal?P.goal.leadsNow:0}"></label>
+        </div>
+        <div id="pgout">${goalOut()}</div>
+      </div>
       <div id="pout" class="stack">${prodOut()}</div>
     </div>
   </div>`;
+}
+function goalOut(){
+  const P=S.product, g=P.goal||{};
+  const price=n(P.licensePrice)||349000;
+  const orders=n(g.target)>0?Math.ceil(n(g.target)/price):0;
+  const trials=n(g.trialBuy)>0?Math.ceil(orders/(n(g.trialBuy)/100)):0;
+  const leads=n(g.leadTrial)>0?Math.ceil(trials/(n(g.leadTrial)/100)):0;
+  const gap=n(g.leadsNow)>0&&leads?leads/n(g.leadsNow):0;
+  let verdict='';
+  if(orders&&gap){
+    if(gap<=1.2)verdict='<b>Traffic hiện tại đã gần đủ.</b> Vấn đề nằm ở tỷ lệ chuyển đổi — dồn sức vào email nhắc trial hết hạn và trang bán.';
+    else if(gap<=5)verdict='<b>Trong tầm với:</b> cần gấp '+gap.toFixed(1)+'× lượng người tiếp cận hiện tại — tăng đều đặn số bài đăng/video có gắn link UTM, kết hợp nâng nhẹ conversion.';
+    else verdict='<b>Đừng cố tăng traffic '+Math.round(gap)+'× ngay.</b> Nâng tỷ lệ chuyển đổi trước (leads→trial và trial→mua đều còn thấp) — mỗi điểm % conversion tăng sẽ kéo số leads cần xuống mạnh, rồi mới tăng traffic.';
+  }
+  return `<div class="ladder">
+    <div class="ladder-row"><span class="ladder-name">Cần bán mỗi tháng</span><span class="ladder-val">${orders} đơn</span></div>
+    <div class="ladder-row"><span class="ladder-name">→ Cần số trial</span><span class="ladder-val">${trials} trial</span></div>
+    <div class="ladder-row total"><span class="ladder-name">→ Cần số leads tiếp cận</span><span class="ladder-val hold">${f(leads)} leads/tháng</span></div>
+    ${gap?`<div class="ladder-row"><span class="ladder-name">So với thực tế hiện nay</span><span class="ladder-val ${gap<=1.2?'pos':'neg'}">gấp ${gap.toFixed(1)} lần</span></div>`:''}
+  </div>
+  ${verdict?`<div style="font-size:12px;color:var(--muted);margin-top:9px;line-height:1.5">${verdict}</div>`:''}`;
 }
 function prodRefresh(){
   const k=document.getElementById('pkpi');if(k)k.innerHTML=prodKpis();
@@ -1618,8 +1663,15 @@ document.addEventListener('input',e=>{
     const id=el.closest('[data-rid]').dataset.rid;
     const r=S.product.revenue.find(x=>x.id===id);if(!r)return;
     const k=el.dataset.r;
-    r[k]= k==='amount'? (val===''?0:val) : k==='orders'? n(el.value) : el.value;
+    r[k]= (k==='amount'||k==='mkt')? (val===''?0:val) : k==='orders'? n(el.value) : el.value;
     prodRefresh();
+  }
+  else if(el.dataset.pg){
+    const k=el.dataset.pg;
+    if(!S.product.goal)S.product.goal={};
+    S.product.goal[k]= isMoney? (val===''?0:val) : n(el.value);
+    const o=document.getElementById('pgout');if(o)o.innerHTML=goalOut();
+    return save();
   }
   else if(el.dataset.pc){
     const k=el.dataset.pc;
