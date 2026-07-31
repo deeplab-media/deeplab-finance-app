@@ -1,6 +1,6 @@
 /* Deeplab Finance PWA service worker — network-first, cache fallback.
    KHÔNG đụng vào api.github.com (đồng bộ dữ liệu luôn đi mạng thật). */
-const CACHE = 'deeplab-finance-v8';
+const CACHE = 'deeplab-finance-v9';
 const CORE = ['./', './index.html', './app.webmanifest', './finance-icon.png', './finance-icon-180.png', './logo.png'];
 
 self.addEventListener('install', e => {

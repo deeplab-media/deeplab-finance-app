@@ -286,11 +286,12 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     </div>
     <button class="navbtn on" data-tab="dash"><span class="navdot"></span><span class="nico">📊</span><span class="nfull">Tổng quan</span><span class="nshort">Tổng quan</span></button>
     <button class="navbtn" data-tab="projects"><span class="navdot"></span><span class="nico">📁</span><span class="nfull">Dự án</span><span class="nshort">Dự án</span></button>
+    <button class="navbtn" data-tab="product"><span class="navdot"></span><span class="nico">🧩</span><span class="nfull">Kênh sản phẩm</span><span class="nshort">Plugin</span></button>
     <button class="navbtn" data-tab="jars"><span class="navdot"></span><span class="nico">🏺</span><span class="nfull">Chia hũ tiền</span><span class="nshort">Hũ tiền</span></button>
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.8</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.9</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -330,8 +331,15 @@ const DEF={
       {id:u(),name:'Dự phòng (sửa máy, tiếp khách, phát sinh)',amount:2000000,inv:false}
     ]
   },
-  projects:[]
+  projects:[],
+  product:{infraMonthly:700000,licensePrice:349000,tools:[],revenue:[]}
 };
+function normProduct(p){
+  const b=JSON.parse(JSON.stringify(DEF.product));
+  const o=Object.assign(b,p||{});
+  o.tools=o.tools||[];o.revenue=o.revenue||[];
+  return o;
+}
 
 /* ============ STATE ============ */
 let S=JSON.parse(JSON.stringify(DEF));
@@ -370,7 +378,7 @@ async function writeRaw(v){
 async function load(){
   try{
     const v=await readRaw();
-    if(v){const d=JSON.parse(v);S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],updatedAt:d.updatedAt||0}}
+    if(v){const d=JSON.parse(v);S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],product:normProduct(d.product),updatedAt:d.updatedAt||0}}
   }catch(e){/* chưa có dữ liệu — dùng mặc định */}
 }
 let saveT=null, warned=false;
@@ -419,7 +427,7 @@ async function ghPull(){
   try{return JSON.parse(b64d(j.content))}catch(e){return null}
 }
 function ghAdopt(d){
-  S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],updatedAt:d.updatedAt||0};
+  S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],product:normProduct(d.product),updatedAt:d.updatedAt||0};
   writeRaw(JSON.stringify(S)).catch(()=>{});
   render();
 }
@@ -611,6 +619,17 @@ function aiReport(){
     }
     L.push('- Đã thu: '+f(c.collected)+' | Còn phải thu: '+f(c.receivable)+' | Tiền phải giữ lại (VAT+TNDN): '+f(c.locked)+' | Tiền mặt thực còn: '+f(c.cash));
   });
+  const pc=prodCalc();
+  if(pc.P.tools.length||pc.P.revenue.length){
+    L.push('');
+    L.push('## Kênh sản phẩm — Deeplab Assist (plugin bán tự động)');
+    L.push('Mô hình: build tool một lần bằng ngày công, bán license '+f(pc.P.licensePrice)+' (gồm VAT) mở khóa cả bộ — doanh thu cộng dồn cả kênh, không chia theo tool.');
+    pc.P.tools.forEach(t=>L.push('- Tool '+(t.name||'(chưa tên)')+': '+n(t.days)+' ngày build → vốn '+f(toolCost(t))));
+    L.push('- Tổng vốn build: '+f(pc.invest)+' | Hạ tầng: '+f(pc.P.infraMonthly)+'/tháng × '+pc.months+' tháng = '+f(pc.infra));
+    L.push('- Doanh thu thuần lũy kế: '+f(pc.revNet)+(pc.orders?' ('+pc.orders+' đơn)':''));
+    L.push('- **Lời/lỗ lũy kế kênh: '+f(pc.pl)+'**'+(pc.pl<0?' — cần thêm ≈ '+pc.needLic+' license để hoà vốn':' — ĐÃ HOÀN VỐN'));
+    pc.P.revenue.filter(r=>r.month).sort((a,b)=>a.month<b.month?-1:1).forEach(r=>L.push('  - '+r.month+': '+f(r.amount)+(r.orders?' ('+r.orders+' đơn)':'')));
+  }
   const list=actives().map(p=>calc(p));
   const t=list.reduce((a,c)=>({rev:a.rev+c.netRev,gp:a.gp+c.gp,net:a.net+c.net,locked:a.locked+c.locked,recv:a.recv+c.receivable,cash:a.cash+c.cash}),{rev:0,gp:0,net:0,locked:0,recv:0,cash:0});
   const gm=t.rev>0?t.gp/t.rev:0;
@@ -639,6 +658,7 @@ function render(){
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   const m=document.getElementById('main');
   m.innerHTML = tab==='dash'?viewDash() : tab==='projects'?(openId?viewProject():viewList()) :
+                tab==='product'?viewProduct() :
                 tab==='jars'?viewJars() : tab==='quote'?viewQuote() :
                 tab==='settings'?viewSettings() : viewDict();
   m.scrollTop=0;
@@ -1116,6 +1136,127 @@ function quoteOut(){
 }
 function qmoney(label,k,v,tip){return `<label class="f"><div class="f-label">${label} ${tip?`<span class="hint" data-tip="${esc(tip)}">i</span>`:''}</div><input class="money" type="text" data-q="${k}" value="${v?f(v):''}" placeholder="0"></label>`}
 
+/* ---------- KÊNH SẢN PHẨM (Deeplab Assist) ---------- */
+function prodCalc(){
+  const P=S.product||normProduct(null), rate=ohPerDay(), v=n(S.settings.vat)/100;
+  const invest=P.tools.reduce((a,t)=>a+n(t.days)*rate+n(t.extra),0);
+  const months=P.revenue.length;
+  const infra=months*n(P.infraMonthly);
+  const revGross=P.revenue.reduce((a,r)=>a+n(r.amount),0);
+  const revNet=revGross/(1+v);
+  const orders=P.revenue.reduce((a,r)=>a+n(r.orders),0);
+  const cost=invest+infra;
+  const pl=revNet-cost;
+  const licNet=n(P.licensePrice)/(1+v);
+  const needLic=pl<0&&licNet>0?Math.ceil(-pl/licNet):0;
+  const sorted=[...P.revenue].filter(r=>r.month).sort((a,b)=>a.month<b.month?-1:1);
+  const last=sorted[sorted.length-1]||null, prev=sorted[sorted.length-2]||null;
+  const n3=Math.min(3,sorted.length);
+  const avg3=n3?sorted.slice(-n3).reduce((a,r)=>a+n(r.amount),0)/n3:0;
+  return {P,rate,invest,infra,months,revGross,revNet,orders,cost,pl,licNet,needLic,last,prev,avg3};
+}
+function toolCost(t){return n(t.days)*ohPerDay()+n(t.extra)}
+function monthLabel(m){if(!m)return '(chưa chọn tháng)';const[y,mo]=m.split('-');return 'Tháng '+n(mo)+'/'+y}
+function prodKpis(){
+  const c=prodCalc();
+  return `
+    <div class="kpi teal"><div class="kpi-label">Doanh thu thuần lũy kế <span class="hint" data-tip="Tổng tiền khách đã trả (đã bóc VAT ${S.settings.vat}%). Doanh thu kênh này cộng dồn cả bộ plugin — không chia theo từng tool vì một license mở khóa tất cả.">i</span></div>
+      <div class="kpi-val">${f(c.revNet)} ₫</div><div class="kpi-sub">${c.orders?c.orders+' đơn · ':''}${f(c.revGross)} ₫ gồm VAT</div></div>
+    <div class="kpi amber"><div class="kpi-label">Tổng vốn đã bỏ <span class="hint" data-tip="Công build các tool (ngày công × ${f(ohPerDay())} ₫) + hạ tầng ${f(c.P.infraMonthly)} ₫ × ${c.months} tháng vận hành.">i</span></div>
+      <div class="kpi-val">${f(c.cost)} ₫</div><div class="kpi-sub">Build ${f(c.invest)} + hạ tầng ${f(c.infra)}</div></div>
+    <div class="kpi ${c.pl>=0?'teal':'red'}"><div class="kpi-label">Lời / lỗ lũy kế kênh</div>
+      <div class="kpi-val ${c.pl>=0?'pos':'neg'}">${f(c.pl)} ₫</div>
+      <div class="kpi-sub">${c.pl>=0?'Kênh đã hoàn vốn':'Cần thêm ≈ '+c.needLic+' license để hoà vốn'}</div></div>
+    <div class="kpi plum"><div class="kpi-label">Tháng gần nhất</div>
+      <div class="kpi-val">${c.last?f(c.last.amount):0} ₫</div>
+      <div class="kpi-sub">${c.prev?('Tháng trước: '+f(c.prev.amount)+' ₫'):'Chưa đủ dữ liệu so sánh'}</div></div>`;
+}
+function prodOut(){
+  const c=prodCalc();
+  const pct=c.cost>0?Math.min(100,Math.max(0,c.revNet/c.cost*100)):0;
+  const trendDown=c.last&&c.prev&&n(c.last.amount)<n(c.prev.amount);
+  return `
+    <div class="card">
+      <div class="card-title">Tiến độ hoàn vốn toàn kênh</div>
+      <div style="height:8px;background:var(--void);border-radius:4px;overflow:hidden;margin-bottom:8px">
+        <div style="height:100%;width:${pct.toFixed(1)}%;background:${c.pl>=0?'var(--teal)':'var(--amber)'}"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted)">Đã thu hồi <b class="mono" style="color:var(--text)">${pct.toFixed(0)}%</b> của ${f(c.cost)} ₫ đã bỏ ra${c.pl<0?' — còn thiếu <b class="mono">'+f(-c.pl)+' ₫</b> ≈ <b class="mono">'+c.needLic+'</b> license '+f(c.P.licensePrice)+' ₫':''}.</div>
+      <div class="ladder" style="margin-top:10px">
+        <div class="ladder-row"><span class="ladder-name">Trung bình ${Math.min(3,c.months)||0} tháng gần nhất</span><span class="ladder-val">${f(c.avg3)} ₫/tháng</span></div>
+        <div class="ladder-row"><span class="ladder-name">Hạ tầng mỗi tháng phải nuôi</span><span class="ladder-val hold">${f(c.P.infraMonthly)} ₫</span></div>
+        <div class="ladder-row total"><span class="ladder-name">Kênh tự nuôi hạ tầng chưa?</span><span class="ladder-val ${c.avg3/(1+n(S.settings.vat)/100)>=c.P.infraMonthly?'pos':'neg'}">${c.avg3/(1+n(S.settings.vat)/100)>=c.P.infraMonthly?'Rồi':'Chưa'}</span></div>
+      </div>
+    </div>
+    ${trendDown?`<div class="alert alert-amber"><div class="alert-icon" style="color:var(--amber)">!</div>
+    <div><b>Đà doanh thu đang giảm</b><p>${monthLabel(c.last.month)} thấp hơn ${monthLabel(c.prev.month)}. Xem lại dashboard admin: trial hết hạn chưa mua là danh sách nên gửi email nhắc đầu tiên.</p></div></div>`:''}
+    ${c.pl>=0&&c.cost>0?`<div class="alert alert-teal"><div class="alert-icon" style="color:var(--teal)">✓</div>
+    <div><b>Kênh đã hoàn vốn</b><p>Từ giờ mỗi license bán thêm gần như là lợi nhuận ròng (chỉ trừ VAT, thuế và hạ tầng). Đây là lúc đáng cân nhắc dồn thêm ngày công build tool mới.</p></div></div>`:''}`;
+}
+function viewProduct(){
+  const P=S.product||(S.product=normProduct(null));
+  return `<div class="page-head"><div class="page-title">Kênh sản phẩm — Deeplab Assist</div>
+  <div class="page-desc">Khác với dự án agency: tool build một lần bằng ngày công, doanh thu 349k cộng dồn cả kênh (một license mở cả bộ nên không chia theo tool). Câu hỏi cần trả lời: cả kênh đã hoàn vốn chưa, và đà tháng có tăng không.</div></div>
+  <div class="grid g4" id="pkpi">${prodKpis()}</div>
+  <div class="split" style="margin-top:14px">
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Vốn đầu tư — tool đã build</div>
+        <div class="costhead" style="grid-template-columns:minmax(110px,1fr) 84px minmax(96px,120px) 28px"><span>Tên tool</span><span class="r">Ngày build</span><span class="r">Chi khác</span><span></span></div>
+        <div id="ptools">${P.tools.map(t=>`<div class="costrow" style="grid-template-columns:minmax(110px,1fr) 84px minmax(96px,120px) 28px" data-tid="${t.id}">
+          <input type="text" data-t="name" value="${esc(t.name)}" placeholder="Tên tool (VD: AI Assist)">
+          <input type="number" min="0" step="0.5" data-t="days" value="${t.days}">
+          <input class="money" type="text" data-t="extra" value="${t.extra?f(t.extra):''}" placeholder="0">
+          <button class="icon-btn" onclick="delTool('${t.id}')" aria-label="Xoá">×</button>
+          <div style="grid-column:1/-1;font-size:11px;color:var(--dim)">Vốn: <b class="mono" data-tv="${t.id}">${f(toolCost(t))}</b> ₫ · tự hoà vốn sau ≈ <b class="mono" data-tl="${t.id}">${Math.ceil(toolCost(t)/(n(P.licensePrice)/(1+n(S.settings.vat)/100)))}</b> license</div>
+        </div>`).join('')||'<div style="font-size:12px;color:var(--dim);padding:6px 0">Chưa có tool nào. Thêm từng plugin đã build: AI Assist, Speedramp, Looks, SFX Assist…</div>'}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addTool()">+ Thêm tool</button>
+        <p style="font-size:11px;color:var(--dim);margin-top:8px">Ngày build = số ngày công của bạn (kể cả sửa lỗi, làm trang bán). "Chi khác" = tiền mua asset, thuê ngoài… nếu có.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">Doanh thu theo tháng — cộng dồn cả kênh</div>
+        <div class="costhead" style="grid-template-columns:130px minmax(100px,1fr) 76px 28px"><span>Tháng</span><span class="r">Tiền về (gồm VAT)</span><span class="r">Số đơn</span><span></span></div>
+        <div id="prevs">${[...P.revenue].sort((a,b)=>(a.month||'')<(b.month||'')?1:-1).map(r=>`<div class="costrow" style="grid-template-columns:130px minmax(100px,1fr) 76px 28px" data-rid="${r.id}">
+          <input type="month" data-r="month" value="${esc(r.month||'')}">
+          <input class="money" type="text" data-r="amount" value="${r.amount?f(r.amount):''}" placeholder="0">
+          <input type="number" min="0" data-r="orders" value="${r.orders||''}" placeholder="đơn">
+          <button class="icon-btn" onclick="delRev('${r.id}')" aria-label="Xoá">×</button>
+        </div>`).join('')||'<div style="font-size:12px;color:var(--dim);padding:6px 0">Mỗi tháng một dòng. Tháng không có đơn vẫn thêm dòng với 0 ₫ — để app tính đúng chi phí hạ tầng đã nuôi.</div>'}</div>
+        <button class="btn btn-ghost btn-sm" style="margin-top:8px;width:100%" onclick="addRev()">+ Thêm tháng</button>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="card">
+        <div class="card-title">Cấu hình kênh</div>
+        <label class="f"><div class="f-label">Chi phí hạ tầng / tháng <span class="hint" data-tip="Render (web service + PostgreSQL, tính theo tháng) + domain .vn (tính theo năm thì chia 12). Lưu ý: nếu đã khai Hosting/Tên miền trong tab Chi phí cố định thì xoá ở bên đó đi để không bị tính hai lần — hạ tầng này là chi phí riêng của kênh plugin.">i</span></div>
+        <input class="money" type="text" data-pc="infraMonthly" value="${P.infraMonthly?f(P.infraMonthly):''}"></label>
+        <label class="f"><div class="f-label">Giá 1 license (gồm VAT) <span class="hint" data-tip="Dùng để quy đổi 'còn thiếu bao nhiêu license thì hoà vốn'. Giá Pro hiện tại 349.000đ.">i</span></div>
+        <input class="money" type="text" data-pc="licensePrice" value="${P.licensePrice?f(P.licensePrice):''}"></label>
+      </div>
+      <div id="pout" class="stack">${prodOut()}</div>
+    </div>
+  </div>`;
+}
+function prodRefresh(){
+  const k=document.getElementById('pkpi');if(k)k.innerHTML=prodKpis();
+  const o=document.getElementById('pout');if(o)o.innerHTML=prodOut();
+  const P=S.product, licNet=n(P.licensePrice)/(1+n(S.settings.vat)/100);
+  P.tools.forEach(t=>{
+    const a=document.querySelector('[data-tv="'+t.id+'"]');if(a)a.textContent=f(toolCost(t));
+    const b=document.querySelector('[data-tl="'+t.id+'"]');if(b)b.textContent=licNet>0?Math.ceil(toolCost(t)/licNet):0;
+  });
+}
+function addTool(){S.product.tools.push({id:u(),name:'',days:1,extra:0});save();render()}
+function delTool(id){if(!confirm('Xoá tool này khỏi danh sách đầu tư?'))return;S.product.tools=S.product.tools.filter(x=>x.id!==id);save();render()}
+function addRev(){
+  const now=new Date(), used=new Set(S.product.revenue.map(r=>r.month));
+  let d=new Date(now.getFullYear(),now.getMonth(),1);
+  for(let i=0;i<24&&used.has(d.toISOString().slice(0,7));i++)d=new Date(d.getFullYear(),d.getMonth()-1,1);
+  S.product.revenue.push({id:u(),month:d.toISOString().slice(0,7),amount:0,orders:0});
+  save();render();
+}
+function delRev(id){S.product.revenue=S.product.revenue.filter(x=>x.id!==id);save();render()}
+
 /* ---------- CẤU HÌNH ---------- */
 function viewSettings(){
   const s=S.settings;
@@ -1378,7 +1519,7 @@ function importJSON(){
   const i=document.createElement('input');i.type='file';i.accept='.json';
   i.onchange=e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();
     r.onload=()=>{try{const d=JSON.parse(r.result);
-      S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[]};
+      S={settings:Object.assign({},DEF.settings,d.settings||{}),projects:d.projects||[],product:normProduct(d.product)};
       save();render();toast('Đã nhập dữ liệu')}catch(err){toast('File không đọc được')}};
     r.readAsText(fl)};
   i.click();
@@ -1465,6 +1606,25 @@ document.addEventListener('input',e=>{
       const o=document.getElementById('qout');if(o)o.innerHTML=quoteOut();
     }
     return save();
+  }
+  else if(el.dataset.t){
+    const id=el.closest('[data-tid]').dataset.tid;
+    const t=S.product.tools.find(x=>x.id===id);if(!t)return;
+    const k=el.dataset.t;
+    t[k]= k==='days'? n(el.value) : k==='extra'? (val===''?0:val) : el.value;
+    prodRefresh();
+  }
+  else if(el.dataset.r){
+    const id=el.closest('[data-rid]').dataset.rid;
+    const r=S.product.revenue.find(x=>x.id===id);if(!r)return;
+    const k=el.dataset.r;
+    r[k]= k==='amount'? (val===''?0:val) : k==='orders'? n(el.value) : el.value;
+    prodRefresh();
+  }
+  else if(el.dataset.pc){
+    const k=el.dataset.pc;
+    S.product[k]= isMoney? (val===''?0:val) : el.value;
+    prodRefresh();
   }
   save();
 });
