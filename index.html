@@ -34,6 +34,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
+html{overflow-x:clip}
 body{
   background:var(--void);
   color:var(--text);
@@ -91,8 +92,8 @@ a{color:var(--teal)}
 .row{display:flex;align-items:center;gap:10px}
 .spread{display:flex;align-items:center;justify-content:space-between;gap:10px}
 
-.kpi{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 16px;position:relative;overflow:hidden}
-.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--dim)}
+.kpi{background:var(--panel);border:1px solid var(--line-soft);border-radius:var(--r);padding:14px 16px;position:relative}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--dim);border-radius:var(--r) 0 0 var(--r)}
 .kpi.teal::before{background:var(--teal)}
 .kpi.amber::before{background:var(--amber)}
 .kpi.clay::before{background:var(--clay)}
@@ -180,9 +181,9 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 .alert b{font-weight:600}
 .alert p{font-size:12.5px;color:var(--muted);margin-top:2px}
 
-.costrow{display:grid;grid-template-columns:1fr 116px 132px 132px 96px 32px;gap:8px;align-items:center;margin-bottom:7px}
+.costrow{display:grid;grid-template-columns:minmax(110px,1.3fr) minmax(96px,110px) minmax(86px,120px) minmax(86px,120px) 72px 28px;gap:6px;align-items:center;margin-bottom:7px}
 .costrow input,.costrow select{padding:7px 9px;font-size:13px}
-.costhead{display:grid;grid-template-columns:1fr 116px 132px 132px 96px 32px;gap:8px;padding:0 0 6px}
+.costhead{display:grid;grid-template-columns:minmax(110px,1.3fr) minmax(96px,110px) minmax(86px,120px) minmax(86px,120px) 72px 28px;gap:6px;padding:0 0 6px;white-space:nowrap}
 .costhead span{font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace}
 .costhead span.r{text-align:right}
 .icon-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);color:var(--dim);display:grid;place-items:center;font-size:15px;transition:.14s}
@@ -429,21 +430,42 @@ async function ghPushFile(path,content,sha){
   const j=await r.json();
   return j.content&&j.content.sha;
 }
+async function ghPushAll(){
+  ghShaData=await ghPushFile('data.json',JSON.stringify(S,null,1),ghShaData);
+  try{
+    if(ghShaRep===null){const r0=await ghReq('GET','contents/bao-cao.md?ref='+GHD.branch);if(r0.ok){const j0=await r0.json();ghShaRep=j0.sha}}
+    ghShaRep=await ghPushFile('bao-cao.md',aiReport(),ghShaRep);
+  }catch(e){/* báo cáo lỗi không chặn đồng bộ dữ liệu */}
+}
 async function ghSync(pullOnly){
   if(!ghTok()||ghBusy)return;
   ghBusy=true;ghSetState('pending');
   try{
     const remote=await ghPull();
+    const localN=(S.projects||[]).length;
+    const remoteN=remote?(remote.projects||[]).length:0;
+    // "established" = máy này đã từng đồng bộ thành công — máy lạ/trống không bao giờ được đè kho
+    const established=(()=>{try{return localStorage.getItem('dlf-synced')==='1'}catch(e){return false}})();
     if(remote&&(remote.updatedAt||0)>(S.updatedAt||0)){
-      ghAdopt(remote);
-      toast('Đã lấy dữ liệu mới hơn từ máy khác');
+      if(remoteN===0&&localN>0){
+        // kho bị trống (sự cố) nhưng máy này còn dữ liệu → đẩy dữ liệu lên lại, không cho xoá
+        S.updatedAt=Date.now();
+        await ghPushAll();
+        toast('Kho đang trống — đã đẩy lại dữ liệu từ máy này lên');
+      }else{
+        ghAdopt(remote);
+        toast('Đã lấy dữ liệu mới hơn từ máy khác');
+      }
     }else if(!pullOnly&&(S.updatedAt||0)>((remote&&remote.updatedAt)||0)){
-      ghShaData=await ghPushFile('data.json',JSON.stringify(S,null,1),ghShaData);
-      try{
-        if(ghShaRep===null){const r0=await ghReq('GET','contents/bao-cao.md?ref='+GHD.branch);if(r0.ok){const j0=await r0.json();ghShaRep=j0.sha}}
-        ghShaRep=await ghPushFile('bao-cao.md',aiReport(),ghShaRep);
-      }catch(e){/* báo cáo lỗi không chặn đồng bộ dữ liệu */}
+      if(localN===0&&remoteN>0&&!established){
+        // máy mới kết nối, chưa có gì → tải dữ liệu về thay vì đè kho
+        ghAdopt(remote);
+        toast('Đã tải dữ liệu từ kho về máy này');
+      }else{
+        await ghPushAll();
+      }
     }
+    try{localStorage.setItem('dlf-synced','1')}catch(e){}
     ghLast=Date.now();ghSetState('ok');
   }catch(e){
     if(e&&(e.status===409||e.status===422)){ghShaData=null;ghShaRep=null;ghSetState('idle');ghSchedule();}
@@ -859,7 +881,7 @@ function costRow(c){
   </div>`;
 }
 function payRow(x){
-  return `<div class="costrow" style="grid-template-columns:1fr 132px 116px 96px 32px" data-yid="${x.id}">
+  return `<div class="costrow" style="grid-template-columns:minmax(100px,1fr) minmax(96px,120px) 112px 76px 28px" data-yid="${x.id}">
     <input type="text" data-y="label" value="${esc(x.label)}" placeholder="Đợt thanh toán">
     <input class="money" type="text" data-y="amount" value="${x.amount?f(x.amount):''}" placeholder="0">
     <input type="date" data-y="date" value="${esc(x.date||'')}">
@@ -1100,8 +1122,8 @@ function viewSettings(){
   <div class="split">
     <div class="card">
       <div class="card-title">Chi phí cố định hàng tháng</div>
-      <div class="costhead" style="grid-template-columns:1fr 150px 96px 32px"><span>Khoản mục</span><span class="r">Số tiền / tháng</span><span>Hoá đơn</span><span></span></div>
-      <div id="ohs">${s.overhead.map(o=>`<div class="costrow" style="grid-template-columns:1fr 150px 96px 32px" data-oid="${o.id}">
+      <div class="costhead" style="grid-template-columns:minmax(110px,1fr) minmax(110px,140px) 74px 28px"><span>Khoản mục</span><span class="r">Số tiền / tháng</span><span>Hoá đơn</span><span></span></div>
+      <div id="ohs">${s.overhead.map(o=>`<div class="costrow" style="grid-template-columns:minmax(110px,1fr) minmax(110px,140px) 74px 28px" data-oid="${o.id}">
         <input type="text" data-o="name" value="${esc(o.name)}">
         <input class="money" type="text" data-o="amount" value="${o.amount?f(o.amount):''}" placeholder="0">
         <label class="tog"><input type="checkbox" data-o="inv"${o.inv?' checked':''}><span class="tog-box">✓</span>HĐ</label>
