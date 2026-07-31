@@ -293,7 +293,7 @@ function fs(v){ // dạng ngắn
 }
 function pc(v){return (n(v)*100).toFixed(1).replace('.',',')+'%'}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),4500)}
 
 /* ============ STORAGE ============ */
 const hasHost = typeof window!=='undefined' && window.storage && typeof window.storage.get==='function';
@@ -411,7 +411,7 @@ async function ghConnect(){
   try{r=await ghReq('GET','')}
   catch(e){
     try{localStorage.removeItem('dlf-gh-token')}catch(e2){}
-    toast('Không kết nối được GitHub — kiểm tra mạng rồi thử lại');
+    toast('Lỗi kết nối GitHub: '+((e&&e.message)?e.message:e));
     ghSetState('off');return;
   }
   if(!r.ok){
