@@ -206,6 +206,26 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 .dict dd{color:var(--muted);font-size:13px;margin-top:3px}
 .dict code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--void);border:1px solid var(--line-soft);padding:1px 6px;border-radius:5px;color:var(--teal)}
 
+/* ---------- phân cấp thông tin ---------- */
+.hero{background:linear-gradient(135deg,var(--panel) 0%,var(--panel-2) 100%);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:12px;position:relative;overflow:visible}
+.hero::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:14px 0 0 14px;background:var(--teal)}
+.hero.bad::before{background:var(--red)}
+.hero-label{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.hero-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:34px;letter-spacing:-.03em;margin-top:6px;line-height:1.1}
+.hero-sub{font-size:12px;color:var(--dim);margin-top:7px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.stat{background:var(--panel);padding:11px 14px;min-width:0}
+.stat-l{font-size:10.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat-v{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:15px;margin-top:3px;font-variant-numeric:tabular-nums}
+details.sec{border:1px solid var(--line-soft);border-radius:12px;background:var(--panel);margin-bottom:12px}
+details.sec>summary{cursor:pointer;list-style:none;padding:13px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;justify-content:space-between;gap:8px;user-select:none;transition:.14s}
+details.sec>summary:hover{color:var(--muted)}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::after{content:'▸';font-family:'Be Vietnam Pro',sans-serif;transition:.15s;flex:0 0 auto}
+details.sec[open]>summary::after{transform:rotate(90deg)}
+details.sec>.sec-body{padding:2px 16px 16px}
+details.sec .card{border:none;padding:0;background:none}
+.sec-hint{font-size:10px;letter-spacing:0;text-transform:none;color:var(--dim);font-family:'Be Vietnam Pro',sans-serif;font-weight:400;margin-left:auto}
 .alert-more{margin-bottom:10px}
 .alert-more summary{cursor:pointer;font-size:12px;color:var(--muted);padding:8px 12px;border:1px dashed var(--line);border-radius:9px;list-style:none;user-select:none;transition:.14s}
 .alert-more summary::-webkit-details-marker{display:none}
@@ -261,6 +281,13 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
   input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{font-size:13px;padding:7px 9px;border-radius:7px}
   .btn{padding:7px 11px;font-size:12.5px}
   .btn-sm{padding:6px 9px;font-size:12px}
+  .hero{padding:15px 16px;border-radius:12px}
+  .hero-val{font-size:25px}
+  .stats{border-radius:11px}
+  .stat{padding:9px 11px}
+  .stat-v{font-size:13px}
+  details.sec>summary{padding:11px 13px}
+  details.sec>.sec-body{padding:2px 13px 13px}
   /* page-head: nút xếp xuống dưới tiêu đề thay vì chen ngang */
   .page-head .spread{flex-direction:column;align-items:flex-start;gap:10px}
   .chip{white-space:nowrap}
@@ -298,7 +325,7 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
     <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
     <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
     <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
-    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.1</span></div>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v2.2</span></div>
   </nav>
   <div class="mwrap">
     <header class="mtop">
@@ -665,6 +692,13 @@ async function aiCopy(){
 }
 
 /* ============ RENDER ============ */
+/* mục thu gọn — nhớ trạng thái mở/đóng qua các lần vẽ lại trong phiên */
+const secState={};
+function sec(id,title,body,defOpen,hint){
+  const open=secState[id]===undefined?!!defOpen:secState[id];
+  return `<details class="sec" data-sec="${id}"${open?' open':''}><summary>${title}${hint?`<span class="sec-hint">${hint}</span>`:''}</summary><div class="sec-body">${body}</div></details>`;
+}
+document.addEventListener('toggle',e=>{const el=e.target;if(el&&el.dataset&&el.dataset.sec)secState[el.dataset.sec]=el.open},true);
 function render(){
   document.querySelectorAll('.navbtn').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
   const m=document.getElementById('main');
@@ -693,33 +727,40 @@ function viewDash(){
     <p style="margin-bottom:16px">Nhập tổng giá trị hợp đồng và các khoản chi. Công cụ sẽ tự bóc VAT, phân bổ chi phí cố định và tính thuế.</p>
     <button class="btn btn-primary" onclick="newProject()">+ Tạo dự án</button></div>`;
 
+  const rep=(()=>{const g={};list.forEach(({p,c})=>{const k=(p.client||'').trim().toLowerCase();if(!k)return;(g[k]=g[k]||[]).push(c.netRev)});
+    let rr=0,cl=0;Object.values(g).forEach(a=>{if(a.length>1){cl++;rr+=a.slice(1).reduce((x,y)=>x+y,0)}});
+    return{cl,pct:t.rev>0?rr/t.rev:0}})();
+
   return `
   <div class="page-head"><div class="page-title">Tổng quan</div>
-  <div class="page-desc">Số liệu tổng hợp từ ${list.length} dự án đang chạy và đã xong.</div></div>
+  <div class="page-desc">${list.length} dự án · cập nhật theo thời gian thực</div></div>
 
-  <div class="grid g4" style="margin-bottom:14px">
-    ${kpi('Doanh thu thuần','plum',fs(t.rev),'Đã bóc VAT ra khỏi hợp đồng','Tổng tiền hợp đồng sau khi trừ phần VAT. Đây mới là doanh thu thật của công ty, VAT chỉ là thu hộ nhà nước.')}
-    ${kpi('Biên lợi nhuận gộp','teal',pc(gm),'Ngành sản xuất TVC thường 35–55%','Gross Margin = (Doanh thu thuần − Chi phí trực tiếp) / Doanh thu thuần. Cho biết mỗi 100đ doanh thu còn lại bao nhiêu sau chi phí sản xuất.')}
-    ${kpi('Lợi nhuận ròng','teal',fs(t.net),'Biên ròng '+pc(nm),'Net Profit = Lợi nhuận gộp − Chi phí cố định phân bổ − Thuế TNDN. Đây là số tiền thực sự thuộc về bạn.')}
-    ${kpi('Tiền phải giữ lại','amber',fs(t.locked),'VAT + thuế TNDN chưa nộp','Tiền này nằm trong tài khoản nhưng KHÔNG phải của bạn. Tiêu vào đây là đang vay nợ nhà nước.')}
+  <div class="hero${t.cash<0?' bad':''}">
+    <div class="hero-label">TIỀN ĐƯỢC PHÉP TIÊU <span class="hint" data-tip="Free Cash = Tiền khách đã trả − chi phí đã trả cho dự án − VAT và thuế phải giữ hộ. Đây là con số duy nhất trả lời câu 'mình đang có bao nhiêu tiền THẬT?'">i</span></div>
+    <div class="hero-val ${t.cash>=0?'pos':'neg'}">${f(t.cash)} ₫</div>
+    <div class="hero-sub">Đã thu ${fs(list.reduce((a,{c})=>a+c.collected,0))} − đã chi ${fs(list.reduce((a,{c})=>a+c.dGross,0))} − giữ hộ thuế ${fs(t.locked)}</div>
   </div>
 
-  <div class="grid g3" style="margin-bottom:14px">
-    ${kpi('Tiền được phép tiêu','teal',fs(t.cash),'Đã thu − đã chi − tiền giữ hộ','Free Cash = Tiền khách đã trả − chi phí đã trả cho dự án − VAT và thuế phải giữ. Con số này mới là tiền tiêu được.')}
-    ${kpi('Công nợ phải thu','clay',fs(t.recv),'Khách chưa thanh toán','Accounts Receivable. Đã ghi nhận doanh thu nhưng tiền chưa về. Lãi trên giấy nằm hết ở đây.')}
-    ${kpi('Doanh thu hoà vốn / tháng','amber',fs(be),'Cần '+f(Math.ceil(be/Math.max(1,t.rev/Math.max(1,list.length))))+' dự án cỡ trung bình','Break-even Revenue = Chi phí cố định tháng / Biên lợi nhuận gộp. Dưới mức này là lỗ dù từng dự án nhìn có lãi.')}
+  <div class="stats">
+    <div class="stat"><div class="stat-l">Phải giữ nộp thuế</div><div class="stat-v hold">${fs(t.locked)}</div></div>
+    <div class="stat"><div class="stat-l">Công nợ phải thu</div><div class="stat-v" style="color:var(--clay)">${fs(t.recv)}</div></div>
+    <div class="stat"><div class="stat-l">Lợi nhuận ròng</div><div class="stat-v ${t.net>=0?'pos':'neg'}">${fs(t.net)}</div></div>
   </div>
-
-  ${(()=>{const g={};list.forEach(({p,c})=>{const k=(p.client||'').trim().toLowerCase();if(!k)return;(g[k]=g[k]||[]).push(c.netRev)});
-    let rr=0,cl=0;Object.values(g).forEach(a=>{if(a.length>1){cl++;rr+=a.slice(1).reduce((x,y)=>x+y,0)}});
-    const pct2=t.rev>0?rr/t.rev:0;
-    return `<div class="card" style="margin-bottom:14px"><div class="card-title">Khách cũ quay lại <span class="hint" data-tip="Lần đầu khách mua vì marketing, từ lần 2 họ mua vì chất lượng — doanh thu đó không tốn một đồng quảng cáo. Chỉ số này càng cao, business càng bền.">i</span></div>
-    <div style="font-size:13px;color:var(--muted)">${cl?`<b class="mono" style="color:var(--teal)">${pc(pct2)}</b> doanh thu thuần đến từ dự án thứ 2 trở đi của khách cũ (${cl} khách quay lại).`:'Chưa có khách nào quay lại lần 2. Sau mỗi dự án nghiệm thu, một tin nhắn hỏi thăm sau 2–4 tuần rẻ hơn mọi quảng cáo — doanh thu bền nhất là khách cũ.'}</div></div>`})()}
 
   ${alerts(list,t,gm)}
-  ${cashflowCard()}
 
-  <div class="split" style="margin-top:14px">
+  ${sec('d-cash','Lịch tiền về & công nợ',cashflowInner(),true)}
+
+  ${sec('d-health','Sức khoẻ kinh doanh',`
+    <div class="grid g4">
+      ${kpi('Doanh thu thuần','plum',fs(t.rev),'Đã bóc VAT ra khỏi hợp đồng','Tổng tiền hợp đồng sau khi trừ phần VAT — doanh thu thật của công ty.')}
+      ${kpi('Biên lợi nhuận gộp','teal',pc(gm),'Ngành TVC thường 35–55%','(Doanh thu thuần − Chi phí trực tiếp) / Doanh thu thuần.')}
+      ${kpi('Hoà vốn / tháng','amber',fs(be),'Dưới mức này là lỗ','Chi phí cố định tháng / Biên gộp. Doanh thu tối thiểu để nuôi bộ máy.')}
+      ${kpi('Khách cũ quay lại','teal',rep.cl?pc(rep.pct):'0%',rep.cl?rep.cl+' khách quay lại':'Chưa có khách quay lại','Doanh thu từ dự án thứ 2 trở đi của cùng khách — phần không tốn một đồng quảng cáo. Sau mỗi dự án xong, nhắn hỏi thăm sau 2–4 tuần rẻ hơn mọi quảng cáo.')}
+    </div>`,false,'biên gộp · hoà vốn · khách cũ')}
+
+  ${sec('d-proj','Phân tích dự án & chi phí cố định',`
+    <div class="split">
     <div class="card">
       <div class="card-title">Biên lợi nhuận ròng theo dự án</div>
       ${list.length?list.sort((a,b)=>b.c.nm-a.c.nm).map(({p,c})=>{
@@ -740,20 +781,16 @@ function viewDash(){
       </div>
       <button class="btn btn-sm" style="margin-top:12px" onclick="go('settings')">Chỉnh chi phí cố định</button>
     </div>
-  </div>
+    </div>`,false,'biên từng dự án · bộ máy')}
 
-  <div class="card" style="margin-top:14px">
-    <div class="spread" style="margin-bottom:12px">
-      <div class="card-title" style="margin:0">Danh sách dự án</div>
-      <div class="row"><button class="btn btn-sm" onclick="exportXLSX()">Xuất Excel</button>
-      <button class="btn btn-sm btn-primary" onclick="newProject()">+ Dự án mới</button></div>
-    </div>
-    ${tableProjects(S.projects)}
-  </div>`;
+  ${sec('d-list','Danh sách dự án',`
+    <div class="row" style="margin-bottom:12px"><button class="btn btn-sm btn-primary" onclick="newProject()">+ Dự án mới</button>
+    <button class="btn btn-sm" onclick="exportXLSX()">Xuất Excel</button></div>
+    ${tableProjects(S.projects)}`,true)}`;
 }
 
 
-function cashflowCard(){
+function cashflowInner(){
   const today=new Date().toISOString().slice(0,10);
   const due=[];
   S.projects.forEach(p=>{ if(p.status==='quote')return;
@@ -763,9 +800,7 @@ function cashflowCard(){
   const late=due.filter(x=>x.late).reduce((a,b)=>a+b.a,0);
   const in30=due.filter(x=>!x.late&&x.d&&x.d<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).reduce((a,b)=>a+b.a,0);
   const nodate=due.filter(x=>!x.d).reduce((a,b)=>a+b.a,0);
-  return `<div class="card" style="margin-top:14px">
-    <div class="card-title">Lịch tiền về &amp; công nợ</div>
-    <div class="grid g3" style="margin-bottom:14px">
+  return `<div class="grid g3" style="margin-bottom:14px">
       ${mini('Quá hạn chưa thu',fs(late),late>0?'neg':'pos','Khách đã quá ngày hẹn mà chưa chuyển. Gọi ngay — công nợ càng để lâu càng khó đòi.')}
       ${mini('Dự kiến về trong 30 ngày',fs(in30),'pos','Dùng con số này so với chi phí cố định tháng để biết có đủ tiền sống không.')}
       ${mini('Chưa hẹn ngày',fs(nodate),nodate>0?'hold':'','Đợt thanh toán chưa gắn ngày. Không có ngày thì không cân đối được dòng tiền.')}
@@ -775,8 +810,7 @@ function cashflowCard(){
       <td class="mono" style="font-size:12px">${x.d?esc(x.d):'<span style="color:var(--amber)">chưa hẹn</span>'} ${x.late?'<span class="chip bad">quá hạn</span>':''}</td>
       <td class="r mono">${f(x.a)}</td></tr>`).join('')}</tbody></table></div>`
     :'<p style="color:var(--muted);font-size:13px">Chưa có đợt thanh toán nào đang chờ. Vào từng dự án, thêm lịch thanh toán 50/50 để theo dõi dòng tiền.</p>'}
-    <div style="margin-top:12px;font-size:12px;color:var(--dim)">So sánh nhanh: chi phí cố định mỗi tháng của anh là <b class="mono" style="color:var(--muted)">${f(ohMonthly())} ₫</b>.</div>
-  </div>`;
+    <div style="margin-top:12px;font-size:12px;color:var(--dim)">So sánh nhanh: chi phí cố định mỗi tháng của anh là <b class="mono" style="color:var(--muted)">${f(ohMonthly())} ₫</b>.</div>`;
 }
 
 function kpi(label,tone,val,sub,tip){
@@ -1077,8 +1111,7 @@ function viewJars(){
         `:'<p style="color:var(--muted);font-size:13px">Nhập số tiền để xem cách chia.</p>'}
       </div>
 
-      <div class="card">
-        <div class="card-title">Tỷ lệ chung khi không gắn dự án</div>
+      ${sec('j-ratio','Tỷ lệ chung khi không gắn dự án',`
         <div class="grid g3">
           ${snum('Hũ Thuế (%)','jarTax',st.jarTax, st.citExempt
             ? 'Đang miễn thuế TNDN nên hũ này chỉ cần đủ VAT: khoảng '+(st.vat/(1+st.vat/100)).toFixed(1)+'% trên tổng tiền về. Nhưng nên để dư vài phần trăm để quen tay trước khi hết ưu đãi.'
@@ -1086,8 +1119,7 @@ function viewJars(){
           ${snum('Hũ Vận hành (%)','jarOps',st.jarOps,'Gợi ý theo số liệu của anh: '+suggestOps.toFixed(0)+'% (chi phí cố định tháng chia doanh thu trung bình tháng).')}
           ${snum('Hũ Dự trữ (%)','jarReserve',st.jarReserve,'5–10% là mức hợp lý cho studio nhỏ.')}
         </div>
-        ${smoney('Doanh thu trung bình / tháng','avgRevenue',st.avgRevenue,'Dùng để gợi ý tỷ lệ hũ Vận hành. Lấy tổng doanh thu 6–12 tháng gần nhất chia đều.')}
-      </div>
+        ${smoney('Doanh thu trung bình / tháng','avgRevenue',st.avgRevenue,'Dùng để gợi ý tỷ lệ hũ Vận hành. Lấy tổng doanh thu 6–12 tháng gần nhất chia đều.')}`,false,'dùng cho tiền lẻ ngoài dự án')}
     </div>
 
     <div class="stack">
@@ -1104,16 +1136,14 @@ function viewJars(){
         ${snum('% trích quỹ dự trữ mỗi lần thu','reservePct',st.reservePct)}
       </div>
 
-      <div class="card">
-        <div class="card-title">Bốn tài khoản nên mở</div>
+      ${sec('j-banks','Bốn tài khoản nên mở',`
         <div class="ladder">
           <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--amber)"></span>Tài khoản THUẾ</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">không dùng thẻ</span></div>
           <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--clay)"></span>Tài khoản SẢN XUẤT</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">trả ê-kíp</span></div>
           <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:#5FA8D3"></span>Tài khoản DỰ TRỮ</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">sổ tiết kiệm</span></div>
           <div class="ladder-row"><span class="ladder-name"><span class="wf-key" style="background:var(--teal)"></span>Tài khoản VẬN HÀNH + LƯƠNG</span><span class="ladder-val" style="font-size:12px;color:var(--dim)">chi tiêu hằng ngày</span></div>
         </div>
-        <p style="color:var(--muted);font-size:12.5px;margin-top:12px">Tài khoản Thuế và Dự trữ nên ở một ngân hàng khác, không cài app trên điện thoại, không gắn thẻ. Ma sát càng lớn thì càng khó tiêu nhầm.</p>
-      </div>
+        <p style="color:var(--muted);font-size:12.5px;margin-top:12px">Tài khoản Thuế và Dự trữ nên ở một ngân hàng khác, không cài app trên điện thoại, không gắn thẻ. Ma sát càng lớn thì càng khó tiêu nhầm.</p>`,false)}
     </div>
   </div>`;
 }
@@ -1259,15 +1289,8 @@ function viewProduct(){
       </div>
     </div>
     <div class="stack">
-      <div class="card">
-        <div class="card-title">Cấu hình kênh</div>
-        <label class="f"><div class="f-label">Chi phí hạ tầng / tháng <span class="hint" data-tip="Render (web service + PostgreSQL, tính theo tháng) + domain .vn (tính theo năm thì chia 12). Lưu ý: nếu đã khai Hosting/Tên miền trong tab Chi phí cố định thì xoá ở bên đó đi để không bị tính hai lần — hạ tầng này là chi phí riêng của kênh plugin.">i</span></div>
-        <input class="money" type="text" data-pc="infraMonthly" value="${P.infraMonthly?f(P.infraMonthly):''}"></label>
-        <label class="f"><div class="f-label">Giá 1 license (gồm VAT) <span class="hint" data-tip="Dùng để quy đổi 'còn thiếu bao nhiêu license thì hoà vốn'. Giá Pro hiện tại 349.000đ.">i</span></div>
-        <input class="money" type="text" data-pc="licensePrice" value="${P.licensePrice?f(P.licensePrice):''}"></label>
-      </div>
-      <div class="card">
-        <div class="card-title">Kế hoạch ngược — từ mục tiêu ra hành động <span class="hint" data-tip="Chủ brand không hỏi 'hôm nay bán được mấy đơn' mà tính ngược: muốn X doanh thu thì cần bao nhiêu đơn → bao nhiêu trial → bao nhiêu người phải nhìn thấy mình. Lấy % chuyển đổi từ admin dashboard của bạn (leads→trial và trial→Pro).">i</span></div>
+      ${sec('p-goal','Kế hoạch ngược — mục tiêu → hành động',`
+        <p style="font-size:12px;color:var(--dim);margin-bottom:10px">Chủ brand không hỏi "hôm nay bán mấy đơn" mà tính ngược: muốn X doanh thu → cần bao nhiêu đơn → trial → leads. Lấy % chuyển đổi từ admin dashboard.</p>
         <label class="f"><div class="f-label">Mục tiêu doanh thu kênh / tháng</div>
         <input class="money" type="text" data-pg="target" value="${P.goal&&P.goal.target?f(P.goal.target):''}"></label>
         <div class="grid g3">
@@ -1275,8 +1298,12 @@ function viewProduct(){
           <label class="f"><div class="f-label">Trial → Mua (%)</div><input type="number" min="0" step="0.5" data-pg="trialBuy" value="${P.goal?P.goal.trialBuy:18}"></label>
           <label class="f"><div class="f-label">Leads thực tế/tháng</div><input type="number" min="0" data-pg="leadsNow" value="${P.goal?P.goal.leadsNow:0}"></label>
         </div>
-        <div id="pgout">${goalOut()}</div>
-      </div>
+        <div id="pgout">${goalOut()}</div>`,false,'cần bao nhiêu leads?')}
+      ${sec('p-cfg','Cấu hình kênh',`
+        <label class="f"><div class="f-label">Chi phí hạ tầng / tháng <span class="hint" data-tip="Render (web service + PostgreSQL, tính theo tháng) + domain .vn (tính theo năm thì chia 12). Lưu ý: nếu đã khai Hosting/Tên miền trong tab Chi phí cố định thì xoá ở bên đó đi để không bị tính hai lần — hạ tầng này là chi phí riêng của kênh plugin.">i</span></div>
+        <input class="money" type="text" data-pc="infraMonthly" value="${P.infraMonthly?f(P.infraMonthly):''}"></label>
+        <label class="f"><div class="f-label">Giá 1 license (gồm VAT) <span class="hint" data-tip="Dùng để quy đổi 'còn thiếu bao nhiêu license thì hoà vốn'. Giá Pro hiện tại 349.000đ.">i</span></div>
+        <input class="money" type="text" data-pc="licensePrice" value="${P.licensePrice?f(P.licensePrice):''}"></label>`,false,'hạ tầng · giá license')}
       <div id="pout" class="stack">${prodOut()}</div>
     </div>
   </div>`;
@@ -1360,27 +1387,22 @@ function viewSettings(){
           ${snum('% doanh thu phân bổ','overheadPct',s.overheadPct)}
         </div>
       </div>
-      <div class="card">
-        <div class="card-title">Thuế suất &amp; mục tiêu</div>
+      ${sec('s-tax','Thuế suất & mục tiêu',`
         <div class="grid g2">
           ${snum('VAT (%)','vat',s.vat,'Thuế giá trị gia tăng đầu ra. Dịch vụ sản xuất thường 10%, có giai đoạn được giảm còn 8% theo nghị quyết. Kiểm tra chính sách đang áp dụng rồi điền.')}
           ${snum('Thuế TNDN (%)','cit',s.cit,'Thuế thu nhập doanh nghiệp, mức phổ thông 20% trên lợi nhuận chịu thuế. Doanh nghiệp nhỏ có thể thuộc diện ưu đãi — hỏi kế toán thuế.')}
           ${snum('TNCN khấu trừ freelancer (%)','pit',s.pit,'Trả cho cá nhân không ký hợp đồng lao động hoặc hợp đồng dưới 3 tháng thì phải khấu trừ 10% nộp thay, nếu khoản chi đạt ngưỡng bên cạnh.')}
           ${smoney('Ngưỡng khấu trừ TNCN mỗi lần chi','pitThreshold',s.pitThreshold,'Từ 01/7/2026 ngưỡng này là 5.000.000đ/lần theo Nghị định 253/2026/NĐ-CP (trước đó là 2.000.000đ). Tính theo TỪNG LẦN CHI TRẢ, không phải tổng cả dự án.')}
           ${snum('Biên gộp mục tiêu (%)','targetGM',s.targetGM,'Ngưỡng cảnh báo. Dự án dưới mức này sẽ hiện báo động ở trang Tổng quan.')}
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">Ưu đãi thuế TNDN</div>
+        </div>`,false,'VAT · TNDN · TNCN')}
+      ${sec('s-uudai','Ưu đãi thuế TNDN',`
         <label class="tog" style="margin-bottom:12px;font-size:13px"><input type="checkbox" data-s="citExempt"${s.citExempt?' checked':''}><span class="tog-box">✓</span>Đang được miễn thuế TNDN</label>
         <label class="f"><div class="f-label">Miễn đến hết ngày <span class="hint" data-tip="Doanh nghiệp nhỏ và vừa được miễn thuế TNDN 3 năm kể từ ngày cấp Giấy chứng nhận đăng ký doanh nghiệp lần đầu (Nghị quyết 198/2025/QH15). Lấy ngày trên GCN cộng 3 năm rồi điền vào đây. Dự án có ngày nghiệm thu sau mốc này sẽ tự tính thuế 20% trở lại.">i</span></div>
           <input type="date" data-s="citUntil" value="${esc(s.citUntil||'')}"></label>
         <div class="alert alert-amber"><div class="alert-icon" style="color:var(--amber)">!</div>
-        <div><b>Miễn thuế không có nghĩa là hết nghĩa vụ</b><p>Vẫn phải kê khai và quyết toán TNDN hằng năm, VAT vẫn nộp bình thường. Hết 3 năm thì mức 20% quay lại — nên vẫn giữ thói quen trích quỹ ngay từ bây giờ.</p></div></div>
-      </div>
+        <div><b>Miễn thuế không có nghĩa là hết nghĩa vụ</b><p>Vẫn phải kê khai và quyết toán TNDN hằng năm, VAT vẫn nộp bình thường. Hết 3 năm thì mức 20% quay lại — nên vẫn giữ thói quen trích quỹ ngay từ bây giờ.</p></div></div>`,false,s.citExempt?'đang miễn':'')}
 
-      <div class="card">
-        <div class="card-title">Đồng bộ điện thoại ↔ máy tính</div>
+      ${sec('s-sync','Đồng bộ điện thoại ↔ máy tính',`
         ${ghTok()?`
         <p style="color:var(--muted);font-size:13px;margin-bottom:10px">Đang đồng bộ với kho riêng tư <b style="color:var(--text)">${GHD.owner}/${GHD.repo}</b> trên GitHub. Chỉ tài khoản GitHub của bạn xem được dữ liệu.</p>
         <p id="ghstatus" style="font-size:12px;color:var(--dim);margin-bottom:12px">${ghLast?'Đồng bộ lần cuối: '+new Date(ghLast).toLocaleString('vi-VN'):'Đã kết nối'}</p>
@@ -1390,8 +1412,7 @@ function viewSettings(){
         <p style="color:var(--muted);font-size:13px;margin-bottom:12px">Dán token GitHub vào đây một lần, dữ liệu sẽ tự lưu vào kho riêng tư <b style="color:var(--text)">${GHD.owner}/${GHD.repo}</b> và tự đồng bộ giữa mọi thiết bị đã kết nối. <span class="hint" data-tip="Tạo token tại github.com → Settings → Developer settings → Fine-grained tokens. Chỉ cấp quyền Contents (Read and write) cho đúng repo ${GHD.repo}. Token chỉ lưu trên máy này, không gửi đi đâu ngoài GitHub.">i</span></p>
         <label class="f"><div class="f-label">GitHub token</div><input type="password" id="ghtoken" placeholder="github_pat_…" autocomplete="off"></label>
         <button class="btn btn-sm btn-primary" onclick="ghConnect()">Kết nối &amp; đồng bộ</button>
-        `}
-      </div>
+        `}`,!ghTok(),ghTok()?'đã kết nối':'chưa kết nối')}
 
       <div class="card">
         <div class="card-title">Sao lưu dữ liệu</div>
