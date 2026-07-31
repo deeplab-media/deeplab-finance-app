@@ -54,6 +54,10 @@ a{color:var(--teal)}
   padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;
 }
 .brand{padding:0 8px 22px;display:flex;align-items:center;gap:10px}
+.brand-logo{width:30px;height:30px;flex:0 0 30px;object-fit:contain}
+.mwrap{flex:1;min-width:0}
+.mtop{display:none}
+.nico,.nshort{display:none}
 .brand-mark{
   width:26px;height:26px;border-radius:7px;flex:0 0 26px;
   background:linear-gradient(145deg,var(--teal),#2a7d9e);
@@ -205,22 +209,53 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 .toast.on{transform:translateX(-50%) translateY(0);opacity:1}
 
 @media(max-width:900px){
-  .shell{flex-direction:column}
-  .rail{width:auto;flex:none;height:auto;position:sticky;top:0;z-index:50;flex-direction:row;overflow-x:auto;padding:calc(10px + env(safe-area-inset-top,0px)) 10px 10px;gap:6px;align-items:center}
-  .brand{padding:0 10px 0 4px;flex:0 0 auto}
-  .brand-sub{display:none}
-  .navbtn{width:auto;white-space:nowrap;padding:8px 12px}
+  .shell{flex-direction:column;min-height:100dvh}
+  /* ---- header nhỏ trên cùng ---- */
+  .mtop{display:flex;align-items:center;gap:9px;position:sticky;top:0;z-index:60;background:rgba(30,33,38,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line-soft);padding:calc(9px + env(safe-area-inset-top,0px)) 14px 9px}
+  .mtop img{width:24px;height:24px;object-fit:contain}
+  .mtop-name{font-weight:600;font-size:14px;letter-spacing:-.01em}
+  .mtop-name span{color:var(--muted);font-weight:500}
+  .mtop .syncdot{margin-left:auto;font-size:11px;color:var(--dim);white-space:nowrap}
+  /* ---- rail thành thanh tab dưới đáy như app iOS ---- */
+  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;width:auto;height:auto;flex:none;flex-direction:row;align-items:stretch;justify-content:space-around;gap:0;padding:6px 2px calc(6px + env(safe-area-inset-bottom,0px));background:rgba(30,33,38,.97);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);border-right:none;z-index:70}
+  .brand{display:none}
   .rail-foot{display:none}
-  .main{padding:18px 16px 60px}
-  .g4,.g3,.g2{grid-template-columns:1fr 1fr}
+  .navdot{display:none}
+  .nfull{display:none}
+  .nico{display:block;font-size:19px;line-height:1;filter:grayscale(1) brightness(1.15);transition:.14s}
+  .nshort{display:block;font-size:10px;line-height:1.1}
+  .navbtn{flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 2px;border-radius:9px}
+  .navbtn:hover{background:none}
+  .navbtn.on{background:none;color:var(--teal)}
+  .navbtn.on .nico{filter:none}
+  /* ---- nội dung ---- */
+  .main{padding:16px 14px calc(88px + env(safe-area-inset-bottom,0px));max-width:none}
+  .page-head{margin-bottom:16px}
+  .page-title{font-size:19px}
+  .page-desc{font-size:13px}
+  .card{padding:14px}
+  .kpi{padding:12px 14px}
+  .kpi-val{font-size:19px}
+  .g4,.g3{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr 1fr}
   .split{grid-template-columns:1fr}
   .sticky-side{position:static}
-  .costrow,.costhead{grid-template-columns:1fr 1fr;gap:6px}
+  .row{flex-wrap:wrap}
+  /* ô nhập ≥16px để iOS không tự phóng to khi chạm */
+  input[type=text],input[type=number],input[type=date],input[type=password],select,textarea{font-size:16px;padding:11px 12px}
+  .btn{padding:10px 14px}
+  .btn-sm{padding:9px 12px;font-size:13px}
+  /* dòng chi phí / thanh toán: bỏ layout bảng 5 cột (style cứng) → thẻ 2 cột */
   .costhead{display:none}
-  .costrow{padding:10px;border:1px solid var(--line-soft);border-radius:9px;margin-bottom:9px}
-  .hint::after{width:200px}
+  .costrow{grid-template-columns:1fr 1fr!important;gap:8px;padding:11px;border:1px solid var(--line-soft);border-radius:10px;margin-bottom:9px}
+  /* tooltip thành bottom-sheet nổi trên thanh tab */
+  .hint::after{position:fixed;left:12px;right:12px;bottom:calc(86px + env(safe-area-inset-bottom,0px));top:auto;transform:none;width:auto;font-size:13px;line-height:1.5}
+  .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px));max-width:calc(100vw - 40px);text-align:center}
 }
-@media(max-width:520px){.g4,.g3,.g2{grid-template-columns:1fr}}
+@media(max-width:520px){
+  .g4,.g3{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -228,21 +263,28 @@ tr.clickable:hover{background:var(--panel-2);cursor:pointer}
 <div class="shell">
   <nav class="rail">
     <div class="brand">
-      <div class="brand-mark">₫</div>
+      <img class="brand-logo" src="logo.png" alt="Deeplab">
       <div>
         <div class="brand-name">Deeplab</div>
         <div class="brand-sub">Finance</div>
       </div>
     </div>
-    <button class="navbtn on" data-tab="dash"><span class="navdot"></span>Tổng quan</button>
-    <button class="navbtn" data-tab="projects"><span class="navdot"></span>Dự án</button>
-    <button class="navbtn" data-tab="jars"><span class="navdot"></span>Chia hũ tiền</button>
-    <button class="navbtn" data-tab="quote"><span class="navdot"></span>Tính giá chào</button>
-    <button class="navbtn" data-tab="settings"><span class="navdot"></span>Chi phí cố định</button>
-    <button class="navbtn" data-tab="dict"><span class="navdot"></span>Từ điển chỉ số</button>
-    <div class="rail-foot"><span id="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.2</span></div>
+    <button class="navbtn on" data-tab="dash"><span class="navdot"></span><span class="nico">📊</span><span class="nfull">Tổng quan</span><span class="nshort">Tổng quan</span></button>
+    <button class="navbtn" data-tab="projects"><span class="navdot"></span><span class="nico">📁</span><span class="nfull">Dự án</span><span class="nshort">Dự án</span></button>
+    <button class="navbtn" data-tab="jars"><span class="navdot"></span><span class="nico">🏺</span><span class="nfull">Chia hũ tiền</span><span class="nshort">Hũ tiền</span></button>
+    <button class="navbtn" data-tab="quote"><span class="navdot"></span><span class="nico">🧮</span><span class="nfull">Tính giá chào</span><span class="nshort">Báo giá</span></button>
+    <button class="navbtn" data-tab="settings"><span class="navdot"></span><span class="nico">⚙️</span><span class="nfull">Chi phí cố định</span><span class="nshort">Chi phí</span></button>
+    <button class="navbtn" data-tab="dict"><span class="navdot"></span><span class="nico">📖</span><span class="nfull">Từ điển chỉ số</span><span class="nshort">Từ điển</span></button>
+    <div class="rail-foot"><span id="syncdot" class="syncdot"><span style="color:var(--dim)">—</span> Chưa bật đồng bộ</span><br>Nhớ bấm <b style="color:var(--muted)">Sao lưu JSON</b> định kỳ.<br><span style="opacity:.55">Phiên bản v1.3</span></div>
   </nav>
-  <main class="main" id="main"></main>
+  <div class="mwrap">
+    <header class="mtop">
+      <img src="logo.png" alt="Deeplab">
+      <div class="mtop-name">Deeplab <span>Finance</span></div>
+      <span class="syncdot"><span style="color:var(--dim)">—</span> Chưa đồng bộ</span>
+    </header>
+    <main class="main" id="main"></main>
+  </div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -337,12 +379,11 @@ function b64e(s){return btoa(unescape(encodeURIComponent(s)))}
 function b64d(s){return decodeURIComponent(escape(atob(String(s).replace(/\n/g,''))))}
 function ghSetState(st){
   ghState=st;
-  const el=document.getElementById('syncdot');
-  if(el){
-    const map={off:['—','var(--dim)','Chưa bật đồng bộ'],idle:['●','var(--dim)','Đã kết nối'],pending:['●','var(--amber)','Đang đồng bộ…'],ok:['●','var(--teal)','Đã đồng bộ'],error:['●','var(--red)','Lỗi đồng bộ']};
-    const m=map[st]||map.off;
+  const map={off:['—','var(--dim)','Chưa bật đồng bộ'],idle:['●','var(--dim)','Đã kết nối'],pending:['●','var(--amber)','Đang đồng bộ…'],ok:['●','var(--teal)','Đã đồng bộ'],error:['●','var(--red)','Lỗi đồng bộ']};
+  const m=map[st]||map.off;
+  document.querySelectorAll('.syncdot').forEach(el=>{
     el.innerHTML='<span style="color:'+m[1]+'">'+m[0]+'</span> '+m[2]+(st==='ok'&&ghLast?' '+new Date(ghLast).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}):'');
-  }
+  });
   if(tab==='settings'){const st2=document.getElementById('ghstatus');if(st2)st2.textContent=({off:'Chưa kết nối',idle:'Đã kết nối, chưa đồng bộ lần nào',pending:'Đang đồng bộ…',ok:'Đồng bộ lần cuối: '+(ghLast?new Date(ghLast).toLocaleString('vi-VN'):''),error:'Lỗi — kiểm tra mạng hoặc token'})[st]||''}
 }
 async function ghReq(method,path,body){
